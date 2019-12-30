@@ -40,6 +40,7 @@
             <el-menu-item @click="()=>{this.$data.dialogVisible = true;}">Load Colormap</el-menu-item>
           </el-submenu>
           <el-menu-item index="/">Help</el-menu-item>
+          <el-menu-item index="/FileManage">File Manage</el-menu-item>
         </el-menu>
       </div>
       <div style="width:100%;height:40px;border-bottom: 1px solid lightgray">

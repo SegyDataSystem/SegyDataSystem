@@ -16,6 +16,7 @@ import FeatureExtraction from '../components/FeatureExtraction';
 import Classification from '../components/Classification';
 import LoadColormap from '../components/LoadColormap';
 import DatavalueDistribute from '../components/DatavalueDistribute';
+import FileManage from '../components/FileManage/FileManage';
 Vue.use(Router);
 
 export default new Router({
@@ -35,7 +36,11 @@ export default new Router({
             { path: '/FeatureExtraction', component: FeatureExtraction},
             { path: '/Classification', component: Classification},
             { path: '/LoadColormap', component:LoadColormap},
-            { path: '/DatavalueDistribute', component:DatavalueDistribute}
+            { path: '/DatavalueDistribute', component:DatavalueDistribute},
+            {
+                path: '/FileManage',
+                component: FileManage
+            }
         ]
     }
 )
