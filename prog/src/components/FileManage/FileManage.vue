@@ -1,7 +1,7 @@
 <template>
     <div id="file-manage">
         <div style="width: 100%;height:80px;" class="my-header">
-            <span>File Upload</span>
+            <span>Segy Data File Manage</span>
         </div>
         <el-container class="my-container">
 
@@ -28,169 +28,342 @@
                 </el-aside>
                 <el-main class="my-main">
                     <div v-if="useIndex===0">
-                        <uploader
-                                browse_button="browse_button"
+                        <div style="padding-left: 5px;text-align: left">
+                            <span style="font-size: 25px;">Upload Single File</span>
+                                <div style="padding-left: 20px;">
+                                    <uploader
+                                            browse_button="browse_button"
+                                            :multi_selection="false"
+                                            :filters="{
+                                              max_file_size : '400kb'
+                                            }"
+                                    />
+                                    <div style="margin-top: 30px;">
+                                        <span>File Type:</span>
+                                        <el-select v-model="selectType" size="small" style="margin-left: 5px;">
+                                            <el-option value="Horizon"></el-option>
+                                        </el-select>
+                                    </div>
+                                    <div style="height: 20px;">
 
-                                :multi_selection="false"
+                                    </div>
+                                    <el-button id="browse_button" size="small" type="primary">select file</el-button>
+            <!--                        <span v-for="file in files">{{file.name}}</span>-->
+                                    <el-button type="danger"  size="small">start upload</el-button>
 
-                                :filters="{
-                                  max_file_size : '400kb'
-                                }"
-
-                        />
-                        <div>
-                            <span>File Type:</span>
-                            <el-select v-model="selectType">
-                                <el-option value="Horizon"></el-option>
-                            </el-select>
+                                    <el-dialog title="正在上传" :visible.sync="dialogTableVisible">
+                                        <el-progress v-if="files.length>0" :text-inside="true" :stroke-width="20" :percentage="files[0].percent"></el-progress>
+                                    </el-dialog>
+                                    <br/>
+                                    <br/>
+                                    <el-tag type="warning">file max length:400kb</el-tag>
+                                </div>
                         </div>
-                        <div style="height: 20px;">
+                        <!--下载列表-->
+                        <div style="padding-left: 5px;text-align: left;margin-top:40px;">
+                            <span style="font-size: 25px;">Already Uploaded File</span>
+                            <div style="padding-left: 20px;">
+                                <el-table
 
+                                        :data="tableData"
+                                        style="width: 70%; margin: 10px 10px;">
+                                    <el-table-column
+                                            label="File Name">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.name}}</span>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="Size">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.size}}</span>
+                                        </template>
+                                    </el-table-column>
+
+                                    <el-table-column
+                                            label="Operation">
+                                        <template>
+                                            <el-button type="primary" size="small">download</el-button>
+                                            <el-button type="danger" size="small">delete</el-button>
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </div>
                         </div>
-                        <el-button id="browse_button" type="primary">选择文件</el-button>
-<!--                        <span v-for="file in files">{{file.name}}</span>-->
-                        <el-button type="danger">开始上传</el-button>
-
-                        <el-dialog title="正在上传" :visible.sync="dialogTableVisible">
-                            <el-progress v-if="files.length>0" :text-inside="true" :stroke-width="20" :percentage="files[0].percent"></el-progress>
-                        </el-dialog>
-                        <br/>
-                        <br/>
-                        <el-tag type="warning">最大只能上传400kb的文件</el-tag>
 
                     </div>
-                    <div style="" v-if="useIndex===1">
-                        <uploader
-                                browse_button="browse_button"
+                    <div v-if="useIndex===1">
+                        <div style="padding-left: 5px;text-align: left">
+                            <span style="font-size: 25px;">Upload Big File</span>
+                            <div style="padding-left: 20px;margin-top: 20px;">
+                                <uploader
+                                        browse_button="browse_button"
 
-                        />
-                        <el-button type="primary" id="browse_button">选择多个文件</el-button>
-                        <br/>
-                        <el-table
-                                :data="tableData"
-                                style="width: 100%; margin: 10px 10px;">
-                            <el-table-column
-                                    label="文件名">
-                                <template slot-scope="scope">
-                                    <span>{{scope.row.name}}</span>
-                                </template>
-                            </el-table-column>
-                            <el-table-column
-                                    label="大小">
-                                <template slot-scope="scope">
-                                    <span>{{scope.row.size}}</span>
-                                </template>
-                            </el-table-column>
-                            <el-table-column
-                                    label="状态">
-                                <template slot-scope="scope">
-                                    <span v-if="scope.row.status === -1">正在计算MD5</span>
-                                    <span v-if="scope.row.status === 1">MD5计算完成，准备上传</span>
-                                    <span v-if="scope.row.status === 4" style="color: brown">上传失败</span>
-                                    <span v-if="scope.row.status === 5" style="color: chartreuse">已上传</span>
-                                    <el-progress v-if="scope.row.status === 2" :text-inside="true" :stroke-width="20" :percentage="scope.row.percent"></el-progress>
-                                </template>
-                            </el-table-column>
-                            <el-table-column
-                                    label="操作">
-                                <template slot-scope="scope">
-                                    <el-button type="danger" @click="deleteFile(scope.row.id)">删除</el-button>
-                                </template>
-                            </el-table-column>
-                        </el-table>
-                        <br/>
-                        <el-button type="danger" @click="up.start()">开始上传</el-button>
+                                />
+                                <span>File Type: </span>
+                                <el-select v-model="selectType" size="small">
+                                    <el-option value="Horizon"></el-option>
+                                </el-select>
+                                <div style="width: 100%;height: 20px;"></div>
+                                <el-button type="primary" id="browse_button" size="small">Select File</el-button>
+                                <br/>
+                                <el-table
+                                        :data="tableData"
+                                        style="width: 100%; margin: 10px 10px;">
+                                    <el-table-column
+                                            label="File Name">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.name}}</span>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="Size">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.size}}</span>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="Status">
+                                        <template slot-scope="scope">
+                                            <span v-if="scope.row.status === -1">正在计算MD5</span>
+                                            <span v-if="scope.row.status === 1">MD5计算完成，准备上传</span>
+                                            <span v-if="scope.row.status === 4" style="color: brown">上传失败</span>
+                                            <span v-if="scope.row.status === 5" style="color: chartreuse">已上传</span>
+                                            <el-progress v-if="scope.row.status === 2" :text-inside="true" :stroke-width="20" :percentage="scope.row.percent"></el-progress>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="Operation">
+                                        <template slot-scope="scope">
+                                            <el-button type="danger" @click="deleteFile(scope.row.id)" size="small">Delete</el-button>
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                                <br/>
+                                <el-button type="primary" @click="up.start()" size="small">Start</el-button>
+
+                            </div>
+                        </div>
+                        <!--下载列表-->
+                        <div style="padding-left: 5px;text-align: left;margin-top:40px;">
+                            <span style="font-size: 25px;">Already Uploaded File</span>
+                            <div style="padding-left: 20px;">
+                                <el-table
+
+                                        :data="tableData"
+                                        style="width: 70%; margin: 10px 10px;">
+                                    <el-table-column
+                                            label="File Name">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.name}}</span>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="size">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.size}}</span>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="Type">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.size}}</span>
+                                        </template>
+                                    </el-table-column>
+
+                                    <el-table-column
+                                            label="Operation">
+                                        <template>
+                                            <el-button type="primary" size="small">download</el-button>
+                                            <el-button type="danger" size="small">delete</el-button>
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </div>
+                        </div>
 
                     </div>
+
                     <div  v-if="useIndex===2">
-                        <uploader
-                                browse_button="browse_button"
+                        <div style="padding-left: 5px;text-align: left">
+                            <span style="font-size: 25px;">Quick Upload</span>
+                            <div style="padding-left: 20px;margin-top: 20px;">
+                                <uploader
+                                        browse_button="browse_button"
 
-                        />
-                        <el-button type="primary" id="browse_button">选择多个文件</el-button>
-                        <br/>
-                        <el-table
-                                :data="tableData"
-                                style="width: 100%; margin: 10px 10px;">
-                            <el-table-column
-                                    label="文件名">
-                                <template slot-scope="scope">
-                                    <span>{{scope.row.name}}</span>
-                                </template>
-                            </el-table-column>
-                            <el-table-column
-                                    label="大小">
-                                <template slot-scope="scope">
-                                    <span>{{scope.row.size}}</span>
-                                </template>
-                            </el-table-column>
-                            <el-table-column
-                                    label="状态">
-                                <template slot-scope="scope">
-                                    <span v-if="scope.row.status === -1">正在计算MD5</span>
-                                    <span v-if="scope.row.status === 1">MD5计算完成，准备上传</span>
-                                    <span v-if="scope.row.status === 4" style="color: brown">上传失败</span>
-                                    <span v-if="scope.row.status === 5 && scope.row.percent === 100" style="color: chartreuse">已上传</span>
-                                    <span v-if="scope.row.status === 5 && scope.row.percent < 100" style="color: darkgreen">妙传成功</span>
-                                    <el-progress v-if="scope.row.status === 2" :text-inside="true" :stroke-width="20" :percentage="scope.row.percent"></el-progress>
-                                </template>
-                            </el-table-column>
-                            <el-table-column
-                                    label="操作">
-                                <template slot-scope="scope">
-                                    <el-button type="danger" @click="deleteFile(scope.row.id)">删除</el-button>
-                                </template>
-                            </el-table-column>
-                        </el-table>
-                        <br/>
-                        <el-button type="danger" @click="uploadStart()">开始上传</el-button>
+                                />
+                                <span>File Type: </span>
+                                <el-select v-model="selectType" size="small">
+                                    <el-option value="Horizon"></el-option>
+                                </el-select>
+                                <div style="width: 100%;height: 20px;"></div>
+                                <el-button type="primary" id="browse_button" size="small">Select File</el-button>
+                                <br/>
+                                <el-table
+                                        :data="tableData"
+                                        style="width: 100%; margin: 10px 10px;">
+                                    <el-table-column
+                                            label="File Name">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.name}}</span>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="Size">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.size}}</span>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="Status">
+                                        <template slot-scope="scope">
+                                            <span v-if="scope.row.status === -1">正在计算MD5</span>
+                                            <span v-if="scope.row.status === 1">MD5计算完成，准备上传</span>
+                                            <span v-if="scope.row.status === 4" style="color: brown">上传失败</span>
+                                            <span v-if="scope.row.status === 5" style="color: chartreuse">已上传</span>
+                                            <el-progress v-if="scope.row.status === 2" :text-inside="true" :stroke-width="20" :percentage="scope.row.percent"></el-progress>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="Operation">
+                                        <template slot-scope="scope">
+                                            <el-button type="danger" @click="deleteFile(scope.row.id)">delete</el-button>
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                                <br/>
+                                <el-button type="primary" @click="up.start()" size="small">start</el-button>
+
+                            </div>
+                        </div>
+                        <!--下载列表-->
+                        <div style="padding-left: 5px;text-align: left;margin-top:40px;">
+                            <span style="font-size: 25px;">Already Uploaded File</span>
+                            <div style="padding-left: 20px;">
+                                <el-table
+
+                                        :data="tableData"
+                                        style="width: 70%; margin: 10px 10px;">
+                                    <el-table-column
+                                            label="File Name">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.name}}</span>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="size">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.size}}</span>
+                                        </template>
+                                    </el-table-column>
+
+                                    <el-table-column
+                                            label="Operation">
+                                        <template>
+                                            <el-button type="primary" size="small">download</el-button>
+                                            <el-button type="danger" size="small">delete</el-button>
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                            </div>
+                        </div>
+
 
                     </div>
                     <div v-if="useIndex===3">
-                        <uploader
-                                browse_button="browse_button"
+                        <div style="padding-left: 5px;text-align: left">
+                            <span style="font-size: 25px;">Stop Upload</span>
+                            <div style="padding-left: 20px;">
+                                <uploader
+                                        browse_button="browse_button"
+                                />
 
-                        />
-                        <el-tag type="warning">自动重传三次</el-tag>
-                        <br/>
-                        <br/>
-                        <el-button type="primary" id="browse_button">选择多个文件</el-button>
-                        <br/>
-                        <el-table
-                                :data="tableData"
-                                style="width: 100%; margin: 10px 10px;">
-                            <el-table-column
-                                    label="文件名">
-                                <template slot-scope="scope">
-                                    <span>{{scope.row.name}}</span>
-                                </template>
-                            </el-table-column>
-                            <el-table-column
-                                    label="大小">
-                                <template slot-scope="scope">
-                                    <span>{{scope.row.size}}</span>
-                                </template>
-                            </el-table-column>
-                            <el-table-column
-                                    label="状态">
-                                <template slot-scope="scope">
-                                    <span v-if="scope.row.status === -1">正在计算MD5</span>
-                                    <span v-if="scope.row.status === 1 && scope.row.percent === 0">MD5计算完成，准备上传</span>
-                                    <span v-if="scope.row.status === 4" style="color: brown">上传失败</span>
-                                    <span v-if="scope.row.status === 5" style="color: chartreuse">已上传</span>
-                                    <el-progress v-if="scope.row.status === 2 || scope.row.status === 1 && scope.row.percent > 0" :text-inside="true" :stroke-width="20" :percentage="scope.row.percent"></el-progress>
-                                </template>
-                            </el-table-column>
-                            <el-table-column
-                                    label="操作">
-                                <template slot-scope="scope">
-                                    <el-button type="danger" @click="deleteFile(scope.row.id)">删除</el-button>
-                                </template>
-                            </el-table-column>
-                        </el-table>
-                        <br/>
-                        <el-button :disabled="uploading" type="danger" @click="uploadStart()">开始上传</el-button>
-                        <el-button :disabled="!uploading" type="warring" @click="uploadStop()">暂停上传</el-button>
+                                <el-tag type="warning">自动重传三次</el-tag>
+                                <br/>
+                                <br/>
+                                <span>File Type: </span>
+                                <el-select v-model="selectType" size="small">
+                                    <el-option value="Horizon"></el-option>
+                                </el-select>
+                                <div style="width: 100%;height: 20px;"></div>
+                                <el-button type="primary" id="browse_button" size="small">Select File</el-button>
+                                <br/>
+                                <el-table
+                                        :data="tableData"
+                                        style="width: 70%; margin: 10px 10px;">
+                                    <el-table-column
+                                            label="File Name">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.name}}</span>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="size">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.size}}</span>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="type">
+                                        <template slot-scope="scope">
+                                            <span>{{scope.row.type}}</span>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="status">
+                                        <template slot-scope="scope">
+                                            <span v-if="scope.row.status === -1">正在计算MD5</span>
+                                            <span v-if="scope.row.status === 1 && scope.row.percent === 0">MD5计算完成，准备上传</span>
+                                            <span v-if="scope.row.status === 4" style="color: brown">上传失败</span>
+                                            <span v-if="scope.row.status === 5" style="color: chartreuse">已上传</span>
+                                            <el-progress v-if="scope.row.status === 2 || scope.row.status === 1 && scope.row.percent > 0" :text-inside="true" :stroke-width="20" :percentage="scope.row.percent"></el-progress>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column
+                                            label="operation">
+                                        <template slot-scope="scope">
+                                            <el-button type="danger" @click="deleteFile(scope.row.id)">delete</el-button>
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                                <el-button :disabled="uploading" type="primary" @click="uploadStart()" size="small">Start</el-button>
+                                <el-button :disabled="!uploading" type="warring" @click="uploadStop()" size="small">Pause</el-button>
+                            </div>
+
+                            <div style="padding-left: 5px;text-align: left;margin-top:40px;">
+                                <span style="font-size: 25px;">Already Uploaded File</span>
+                                <div style="padding-left: 20px;">
+                                    <el-table
+
+                                            :data="tableData"
+                                            style="width: 70%; margin: 10px 10px;">
+                                        <el-table-column
+                                                label="File Name">
+                                            <template slot-scope="scope">
+                                                <span>{{scope.row.name}}</span>
+                                            </template>
+                                        </el-table-column>
+                                        <el-table-column
+                                                label="Size">
+                                            <template slot-scope="scope">
+                                                <span>{{scope.row.size}}</span>
+                                            </template>
+                                        </el-table-column>
+
+                                        <el-table-column
+                                                label="operation">
+                                            <template>
+                                                <el-button type="primary" size="small">download</el-button>
+                                                <el-button type="danger" size="small">delete</el-button>
+                                            </template>
+                                        </el-table-column>
+                                    </el-table>
+                                </div>
+                            </div>
+
+                            <br/>
+
+                        </div>
                     </div>
                 </el-main>
             </el-container>
@@ -212,7 +385,7 @@
                 dialogTableVisible: false,
                 files:[],
                 up: {},
-                tableData:[],
+                tableData:[{}],
                 selectType: 'Horizon',
 
             }
