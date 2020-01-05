@@ -156,6 +156,7 @@
         },
         methods: {
             init() {
+                window.console.log('build');
                 let that = this;
                 const preInitMethod = {
                     Init(up, info) {
@@ -283,6 +284,7 @@
                 if (this.required_features != null) {
                     prop["required_features"] = this.required_features;
                 }
+
                 let uploader = new plupload.Uploader(prop);
                 uploader.init();
                 this.up = uploader;

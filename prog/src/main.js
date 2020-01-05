@@ -6,16 +6,18 @@ import router from "./index/index";
 import global from './components/global.js';
 import axios from 'axios'
 import qs from 'qs';
+import Global from './Global'
 
 Vue.use(ElementUI);
 
-Vue.prototype.$axios = axios
+Vue.prototype.$axios = axios;
 Vue.prototype.$qs=qs;
-import echarts from 'echarts'
+import echarts from 'echarts';
 Vue.prototype.$echarts = echarts;
 Vue.config.productionTip = false;
 
 Vue.prototype.$global = global;
+Vue.prototype.$Global = Global;
 new Vue({
   render: h => h(App),
   router,

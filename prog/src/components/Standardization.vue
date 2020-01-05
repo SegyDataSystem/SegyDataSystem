@@ -10,37 +10,41 @@
                 <el-row style="width:100%">
                     <el-col style="width:50%;text-align:left">
                         <div >
-                            <el-select size="small" v-model="horizonSelect" style="width:80%">
+                            <el-select size="small" v-model="horizonSelect" style="width:80%" disabled>
                                 <el-option value="0" label="Horizon"></el-option>
                             </el-select>
                         </div>
                         <div style="margin-top:20px;width:80%">
-                            <el-table
-                                    ref="multipleTable"
-                                    :data="tableData"
-                                    tooltip-effect="dark"
-                                    style="width: 98%;border:1px solid lightgray;font-szie:10px;"
-                                    max-height="330"
-                                    >
-                                    <el-table-column
-                                    type="selection"
-                                    width="55">
-                                    </el-table-column>
-                                    <el-table-column prop="name" label="Name" width="300" style="font-size:8px;">
-                                    </el-table-column>
-                                </el-table>
+<!--                            <el-table-->
+<!--                                    ref="multipleTable"-->
+<!--                                    :data="tableData"-->
+<!--                                    tooltip-effect="dark"-->
+<!--                                    style="width: 98%;border:1px solid lightgray;font-szie:10px;"-->
+<!--                                    max-height="330"-->
+<!--                                    >-->
+<!--                                    <el-table-column-->
+<!--                                    type="selection"-->
+<!--                                    width="55">-->
+<!--                                    </el-table-column>-->
+<!--                                    <el-table-column prop="name" label="Name" width="300" style="font-size:8px;">-->
+<!--                                    </el-table-column>-->
+<!--                                </el-table>-->
+                            <select multiple="multiple" style="width: 80%;height:100px;" v-model="selectType">
+                                <option v-for="(item, index) in downloadFileList" :value="index" :label="item.realName" :key="index">Dip</option>
+                            </select>
+
                         </div>
                         
                     </el-col>
                     <el-col style="width:49%;margin-left:1%;text-align:left">
                         <div >
-                            <el-select size="small" v-model="horizonSelect1" style="width:80%">
-                                <el-option value="0" label="Ha6_T03t-50"></el-option>
+                            <el-select size="small" v-model="horizonSelect1" style="width:80%" disabled>
+                                <el-option value="0" label="Curvedness"></el-option>
                             </el-select>
                         </div>
                         <div style="margin-top:20px;width:80%">
-                            <el-radio v-model="radio" label="1">Max-Min</el-radio>
-                            <el-radio v-model="radio" label="2">Z-Score</el-radio>
+                            <el-radio v-model="radio" label="MAX_MIN" value="MAX_MIN">Max-Min</el-radio>
+                            <el-radio v-model="radio" label="Z_SCORE" value="Z_SCORE">Z-Score</el-radio>
                         </div>
                     </el-col>
 
@@ -49,13 +53,11 @@
             </div>
 
             <div style="margin-top:30px;">
-                    <el-button type="primary" @click="()=>{this.$router.push('/Result')}">Start</el-button>
+                    <el-button type="primary" @click="()=>{this.$router.push({path:'/Result',query:{file: this.downloadFileList[selectType],radio: this.radio}})}">Start</el-button>
                     <el-button type="primary" @click="()=>{this.$router.push('/')}">Cancel</el-button>
             </div>
         </div>
-        <div v-if="step===2">
-            
-        </div>
+
         <div style="width:100%;height:50px;"></div>
 
     </div>
@@ -68,21 +70,54 @@
             return{
                 choosedData:'dn_rms_poststackamplitude',
                 step:1,
-                radio:'1',
+                radio:'MAX_MIN',
                 horizonSelect:'0',
                 horizonSelect1:'0',
+                selectType:'',
                 tableData:[
                     {
-                        name:'dn_rms_poststackamplitude'
+                        name:'Throw'
+                    },
+                    {
+                        name:'Dip'
                     },
                     
                 ],
+                downloadFileList:[]
             }
         },
         mounted(){
-           
+            let _this = this;
+            this.$axios({
+                method:'get',
+                url: this.$Global.server_config.url+'/downloadFile/fileList?userId='+this.$Global.server_config.userId,
+
+            }).then((response)=>{
+                _this.downloadFileList = response.data;
+                window.console.log(response.data);
+            });
            
         
+        },
+        methods:{
+            startCalculate(){
+                // let _this = this;
+                this.$axios({
+                    method:'post',
+                    url: '/datamining',
+                    data:{
+                        dataMiningMethod:this.$data.selectType,
+                        parameters:[
+
+                        ],
+                        workZone:{
+
+                        },
+                        subProjectId: this.$Global.projectDetails.subProjectList[1].id
+                    }
+                })
+            }
+
         }
     }
 </script>

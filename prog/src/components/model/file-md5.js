@@ -1,10 +1,11 @@
+/* eslint-enable */
 'use strict';
 
-import '../plugins/js-spark-md5.js'
+import '../plugin/js-spark-md5.js';
 
-export default function (file, callback) {
+export default function (filea, callback) {
     var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice,
-        file = file,
+        file = filea,
         chunkSize = 2097152,                             // Read in chunks of 2MB
         chunks = Math.ceil(file.size / chunkSize),
         currentChunk = 0,
@@ -37,4 +38,4 @@ export default function (file, callback) {
 
     loadNext();
 };
-
+/* eslint-enable */

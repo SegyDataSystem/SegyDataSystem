@@ -5,7 +5,7 @@
                 Feature Extraction Step {{step}} of 2
             </span>
             <span v-if="step>2" class="import-title">
-                Feature Extraction - PCA
+                Feature Extraction - {{select5}}
             </span>
         </div>
 
@@ -29,7 +29,7 @@
                     </el-select>
                 </div>
                 <div class="form-item-body">
-                    <el-transfer v-model="value" :data="data" :titles="[' ', ' ']"></el-transfer>
+                    <el-transfer v-model="value" :data="data" @change="changeChoose" :titles="['Uploaded Files', 'Chosed Files']"></el-transfer>
                 </div>
                 <div class="form-item-body">
                     <el-button type="primary">Show Correlation Diagram</el-button>
@@ -51,7 +51,14 @@
                 </div>
                 <div class="form-item-body">
                     <el-select v-model="select5" placeholder="select...">
-                        <el-option value="0" label="PCA"></el-option>
+                        <el-option value="PCA" label="PCA"></el-option>
+                        <el-option value="ICA" label="ICA"></el-option>
+                        <el-option value="LPP" label="LPP"></el-option>
+                        <el-option value="NPE" label="NPE"></el-option>
+                        <el-option value="LLE(none)" label="LLE(none)"></el-option>
+                        <el-option value="ISOMAP(none)" label="ISOMAP(none)"></el-option>
+                        <el-option value="ISOMAPⅡ(none)" label="ISOMAPⅡ(none)"></el-option>
+
                     </el-select>
                 </div>
                 
@@ -78,13 +85,13 @@
                         <span>Inline</span>
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.inlineFrom" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.inlineTo" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.inlineStep" />
                     </el-col>
                 </el-row>
                  <el-row style="width:100%;margin-top:10px;">
@@ -92,13 +99,13 @@
                         <span>Crossline</span>
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.xlineFrom" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.xlineTo" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.xlineStep" />
                     </el-col>
                 </el-row>
                 </div>
@@ -125,13 +132,13 @@
                         <span>Inline</span>
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.inlineFrom" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.inlineTo" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.inlineStep" />
                     </el-col>
                 </el-row>
                  <el-row style="width:100%;margin-top:10px;">
@@ -139,13 +146,13 @@
                         <span>Crossline</span>
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.xlineFrom" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.xlineTo" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.xlineStep" />
                     </el-col>
                 </el-row>
                 </div>
@@ -162,46 +169,206 @@
             </div>
 
             <div v-if="step===3">
+                <div v-if="select5==='PCA'">
 
-                <div class="form-item-title" style="margin-top:40px;">
-                    <span class="form-item-title-span">PCA(Principal Component Analysis)</span>
-                </div>
-                
-                <div class="form-item-body">
-                    <div>
-                        <span style="display:inline-block;width:200px;">Energy Value:</span>
-                        <input style="width:100px;" />
+                    <div class="form-item-title" style="margin-top:40px;">
+                        <span class="form-item-title-span">PCA(Principal Component Analysis)</span>
                     </div>
-                    <div style="margin-top:15px;">
-                        <span style="display:inline-block;width:200px;">Extracted Dimensions:</span>
-                        <input style="width:100px;" />
+
+                    <div class="form-item-body">
+                        <div>
+                            <span style="display:inline-block;width:200px;">Energy Value:</span>
+                            <input style="width:100px;" v-model="parameterPCA[0].value" />
+                        </div>
+                        <div style="margin-top:15px;">
+                            <span style="display:inline-block;width:200px;">Extracted Dimensions:</span>
+                            <input style="width:100px;" v-model="parameterPCA[1].value" />
+                        </div>
                     </div>
-                </div>
 
-                
 
-                <div class="form-item-title" style="margin-top:45px;">
-                    <span class="form-item-title-span">Selected Attributes</span>
-                </div>
-                <div class="form-item-body">
-                    <el-table :data="tableData" style="width:200px;">
-                        <el-table-column
-                        label="selected features"
-                        prop="name">
-                        </el-table-column>
-                    </el-table>
-                </div>
 
-                
-                <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
-                <div style="margin-top:30px;">
-                    <el-button  @click="()=>{
-                       this.$router.push('/');
-                    }">Run</el-button>
-                    <el-button  @click="()=>{this.$router.push('/')}">Save</el-button>
+                    <div class="form-item-title" style="margin-top:45px;">
+                        <span class="form-item-title-span">Selected Attributes</span>
+                    </div>
+                    <div class="form-item-body">
+                        <el-table :data="chosedFileList" style="width:200px;">
+                            <el-table-column
+                            label="selected features"
+                            prop="realName">
+                            </el-table-column>
+                        </el-table>
+                    </div>
+
+
+                    <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
+                    <div style="margin-top:30px;">
+                        <el-button  @click="startCalculatePCA">Run</el-button>
+                        <el-button  @click="()=>{this.$router.push('/')}">Save</el-button>
+                    </div>
+                    <div style="width:100%;height:50px;"></div>
                 </div>
-                <div style="width:100%;height:50px;"></div>
+                <div v-if="select5==='ICA'">
+
+                    <div class="form-item-title" style="margin-top:40px;">
+                        <span class="form-item-title-span">{{select5}}</span>
+                    </div>
+
+                    <div class="form-item-body">
+
+                        <div style="margin-top:15px;">
+                            <span style="display:inline-block;width:200px;">Dimensions:</span>
+                            <input style="width:100px;" v-model="parameterICA[0].value" />
+                        </div>
+                    </div>
+
+
+
+                    <div class="form-item-title" style="margin-top:45px;">
+                        <span class="form-item-title-span">Selected Attributes</span>
+                    </div>
+                    <div class="form-item-body">
+                        <el-table :data="chosedFileList" style="width:200px;">
+                            <el-table-column
+                                    label="selected features"
+                                    prop="realName">
+                            </el-table-column>
+                        </el-table>
+                    </div>
+
+
+                    <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
+                    <div style="margin-top:30px;">
+                        <el-button  @click="startCalculateICA">Run</el-button>
+                        <el-button  @click="()=>{this.$router.push('/')}">Save</el-button>
+                    </div>
+                    <div style="width:100%;height:50px;"></div>
+                </div>
+                <div v-if="select5==='LPP'">
+
+                    <div class="form-item-title" style="margin-top:40px;">
+                        <span class="form-item-title-span">{{select5}}</span>
+                    </div>
+
+                    <div class="form-item-body">
+                        <div>
+                            <span style="display:inline-block;width:200px;">K-Neighbour:</span>
+                            <input style="width:100px;" v-model="parameterLPP[0].value" />
+                        </div>
+                        <div style="margin-top:15px;">
+                            <span style="display:inline-block;width:200px;">Extracted Dimensions:</span>
+                            <input style="width:100px;" v-model="parameterLPP[1].value" />
+                        </div>
+                        <div style="margin-top:15px;">
+                            <span style="display:inline-block;width:200px;">Sigma:</span>
+                            <input style="width:100px;" v-model="parameterLPP[2].value" />
+                        </div>
+                    </div>
+
+
+
+                    <div class="form-item-title" style="margin-top:45px;">
+                        <span class="form-item-title-span">Selected Attributes</span>
+                    </div>
+                    <div class="form-item-body">
+                        <el-table :data="chosedFileList" style="width:200px;">
+                            <el-table-column
+                                    label="selected features"
+                                    prop="realName">
+                            </el-table-column>
+                        </el-table>
+                    </div>
+
+
+                    <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
+                    <div style="margin-top:30px;">
+                        <el-button  @click="startCalculateLPP">Run</el-button>
+                        <el-button  @click="()=>{this.$router.push('/')}">Save</el-button>
+                    </div>
+                    <div style="width:100%;height:50px;"></div>
+                </div>
+                <div v-if="select5==='NPE'">
+
+                    <div class="form-item-title" style="margin-top:40px;">
+                        <span class="form-item-title-span">{{select5}}</span>
+                    </div>
+
+                    <div class="form-item-body">
+                        <div>
+                            <span style="display:inline-block;width:200px;">K-Neighbour:</span>
+                            <input style="width:100px;" v-model="parameterNPE[0].value" />
+                        </div>
+                        <div style="margin-top:15px;">
+                            <span style="display:inline-block;width:200px;">Extracted Dimensions:</span>
+                            <input style="width:100px;" v-model="parameterNPE[1].value" />
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="form-item-title" style="margin-top:45px;">
+                        <span class="form-item-title-span">Selected Attributes</span>
+                    </div>
+                    <div class="form-item-body">
+                        <el-table :data="chosedFileList" style="width:200px;">
+                            <el-table-column
+                                    label="selected features"
+                                    prop="realName">
+                            </el-table-column>
+                        </el-table>
+                    </div>
+
+
+                    <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
+                    <div style="margin-top:30px;">
+                        <el-button  @click="startCalculateNPE">Run</el-button>
+                        <el-button  @click="()=>{this.$router.push('/')}">Save</el-button>
+                    </div>
+                    <div style="width:100%;height:50px;"></div>
+                </div>
+                <div v-if="select5==='LLE'">
+
+                    <div class="form-item-title" style="margin-top:40px;">
+                        <span class="form-item-title-span">{{select5}}</span>
+                    </div>
+
+                    <div class="form-item-body">
+                        <div>
+                            <span style="display:inline-block;width:200px;">K-Neighbour:</span>
+                            <input style="width:100px;" v-model="parameterLLE[0].value" />
+                        </div>
+                        <div style="margin-top:15px;">
+                            <span style="display:inline-block;width:200px;">Extracted Dimensions:</span>
+                            <input style="width:100px;" v-model="parameterLLE[1].value" />
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="form-item-title" style="margin-top:45px;">
+                        <span class="form-item-title-span">Selected Attributes</span>
+                    </div>
+                    <div class="form-item-body">
+                        <el-table :data="chosedFileList" style="width:200px;">
+                            <el-table-column
+                                    label="selected features"
+                                    prop="realName">
+                            </el-table-column>
+                        </el-table>
+                    </div>
+
+
+                    <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
+                    <div style="margin-top:30px;">
+                        <el-button  @click="startCalculateLLE">Run</el-button>
+                        <el-button  @click="()=>{this.$router.push('/')}">Save</el-button>
+                    </div>
+                    <div style="width:100%;height:50px;"></div>
+                </div>
             </div>
+
 
         </div>
     </div>
@@ -230,15 +397,216 @@
                 select2:'0',
                 select3:'0',
                 select4:'0',
-                select5:'0',
+                select5:'PCA',
                 data: generateData(),
                 value: [],
                 step:1,
                 tableData:[
+
+                ],
+                downloadFileList:[],
+                chosedFileList:[],
+                workZone:{
+                    id:'',
+                    inlineFrom:0,
+                    inlineTo:0,
+                    inlineStep:0,
+                    xlineFrom:0,
+                    xlineTo:0,
+                    xlineStep:0,
+                    timeFrom:0,
+                    timeStep:0,
+                },
+                parameterPCA:[
                     {
-                        name:'SRC_dn_rms_poststackamplitude'
+                        name:'Energy Value',
+                        value: ''
+                    },
+                    {
+                        name:'Extracted Dimensions',
+                        value: ''
                     }
-                ]
+                ],
+                parameterICA:[
+                    {
+                        name:'Dimensions',
+                        value: ''
+                    }
+                ],
+                parameterLPP:[
+                    {
+                        name:'K-Neighbour',
+                        value: ''
+                    },
+                    {
+                        name:'Extracted Dimensions',
+                        value: ''
+                    },
+                    {
+                        name:'Sigma',
+                        value:''
+                    }
+                ],
+                parameterNPE:[
+                    {
+                        name:'K-Neighbour',
+                        value: ''
+                    },
+                    {
+                        name:'Extracted Dimensions',
+                        value: ''
+                    }
+                ],
+                parameterLLE:[
+                    {
+                        name:'K-Neighbour',
+                        value: ''
+                    },
+                    {
+                        name:'Extracted Dimensions',
+                        value: ''
+                    }
+                ],
+
+            }
+        },
+        mounted() {
+            //获取文件列表
+            let _this = this;
+            this.$axios({
+                method:'get',
+                url: this.$Global.server_config.url+'/downloadFile/fileList?userId='+this.$Global.server_config.userId,
+
+            }).then((response)=>{
+                _this.downloadFileList = response.data;
+                for(let index = 0; index < _this.downloadFileList.length; index++){
+                    _this.tableData.push({
+                        key: index,
+                        label: _this.downloadFileList[index].realName,
+                        disabled: false
+                    });
+                }
+                _this.$data.data = _this.tableData;
+
+            });
+        },
+        methods:{
+            changeChoose(current, direction, keys){
+                window.console.log(current);
+                window.console.log(direction);
+                window.console.log(keys);
+                let temp = [];
+                for(let index = 0;index < current.length; index++){
+                    temp.push(this.downloadFileList[current[index]])
+                }
+                this.chosedFileList = temp;
+                window.console.log(this.chosedFileList);
+
+            },
+            startCalculatePCA(){
+                let _this = this;
+                let files = [];
+                for(let index = 0; index < this.chosedFileList.length; index++){
+                    files.push(this.chosedFileList[index].id);
+                }
+                this.$axios({
+                    method:'post',
+                    url:'/datamining',
+                    data:{
+                        dataMiningMethod: this.select5,
+                        workZone: this.workZone,
+                        subProjectId: this.$Global.projectDetails.subProjectList[1].id,
+                        fileId:files,
+                        parameters: this.parameterPCA
+                    }
+                }).then((response)=>{
+                    window.console.log(response);
+                    _this.$router.push('/');
+                })
+            },
+            startCalculateICA(){
+                let _this = this;
+                let files = [];
+                for(let index = 0; index < this.chosedFileList.length; index++){
+                    files.push(this.chosedFileList[index].id);
+                }
+                this.$axios({
+                    method:'post',
+                    url:'/datamining',
+                    data:{
+                        dataMiningMethod: this.select5,
+                        workZone: this.workZone,
+                        subProjectId: this.$Global.projectDetails.subProjectList[1].id,
+                        fileId:files,
+                        parameters: this.parameterICA
+                    }
+                }).then((response)=>{
+                    window.console.log(response);
+                    _this.$router.push('/');
+                })
+            },
+            startCalculateLPP(){
+                let _this = this;
+                let files = [];
+                for(let index = 0; index < this.chosedFileList.length; index++){
+                    files.push(this.chosedFileList[index].id);
+                }
+                this.$axios({
+                    method:'post',
+                    url:'/datamining',
+                    data:{
+                        dataMiningMethod: this.select5,
+                        workZone: this.workZone,
+                        subProjectId: this.$Global.projectDetails.subProjectList[1].id,
+                        fileId:files,
+                        parameters: this.parameterLPP
+                    }
+                }).then((response)=>{
+                    window.console.log(response);
+                    _this.$router.push('/');
+                })
+            },
+            startCalculateNPE(){
+                let _this = this;
+                let files = [];
+                for(let index = 0; index < this.chosedFileList.length; index++){
+                    files.push(this.chosedFileList[index].id);
+                }
+                this.$axios({
+                    method:'post',
+                    url:'/datamining',
+                    data:{
+                        dataMiningMethod: this.select5,
+                        workZone: this.workZone,
+                        subProjectId: this.$Global.projectDetails.subProjectList[1].id,
+                        fileId:files,
+                        parameters: this.parameterNPE
+                    }
+                }).then((response)=>{
+                    window.console.log(response);
+                    _this.$router.push('/');
+                })
+            },
+            startCalculateLLE(){
+                let _this = this;
+                let files = [];
+                for(let index = 0; index < this.chosedFileList.length; index++){
+                    files.push(this.chosedFileList[index].id);
+                }
+                this.$axios({
+                    method:'post',
+                    url:'/datamining',
+                    data:{
+                        dataMiningMethod: this.select5,
+                        workZone: this.workZone,
+                        subProjectId: this.$Global.projectDetails.subProjectList[1].id,
+                        fileId:files,
+                        parameters: this.parameterLLE
+                    }
+                }).then((response)=>{
+                    window.console.log(response);
+                    _this.$router.push('/');
+                })
             }
         }
     }

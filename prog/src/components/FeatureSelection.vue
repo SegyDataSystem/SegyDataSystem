@@ -5,7 +5,7 @@
                 Feature Selection Step {{step}} of 2
             </span>
             <span v-if="step>2" class="import-title">
-                Relative Entrophy
+                {{select5}}
             </span>
         </div>
 
@@ -29,7 +29,7 @@
                     </el-select>
                 </div>
                 <div class="form-item-body">
-                    <el-transfer v-model="value" :data="data" :titles="[' ', ' ']"></el-transfer>
+                    <el-transfer v-model="value" :data="data" @change="changeChoose" :titles="[' ', ' ']"></el-transfer>
                 </div>
                 <div class="form-item-body">
                     <el-button type="primary">Show Correlation Diagram</el-button>
@@ -51,7 +51,13 @@
                 </div>
                 <div class="form-item-body">
                     <el-select v-model="select5" placeholder="select...">
-                        <el-option value="0" label="Relative Entrophy"></el-option>
+                        <el-option value="Relative Entrophy" label="Relative Entrophy"></el-option>
+                        <el-option value="T-Test" label="T-Test"></el-option>
+                        <el-option value="Chernoff Bound" label="Chernoff Bound"></el-option>
+                        <el-option value="ROC" label="ROC"></el-option>
+                        <el-option value="Wilcoxon" label="Wilcoxon"></el-option>
+                        <el-option value="Laplacian Score" label="Laplacian Score"></el-option>
+                        <el-option value="UFSMC(none)" label="UFSMC(none)"></el-option>
                     </el-select>
                 </div>
                 
@@ -78,13 +84,13 @@
                         <span>Inline</span>
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.inlineFrom" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.inlineTo" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.inlineStep"/>
                     </el-col>
                 </el-row>
                  <el-row style="width:100%;margin-top:10px;">
@@ -92,13 +98,13 @@
                         <span>Crossline</span>
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.xlineFrom"/>
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.xlineTo"/>
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.xlineStep" />
                     </el-col>
                 </el-row>
                 </div>
@@ -125,13 +131,13 @@
                         <span>Inline</span>
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.inlineFrom" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.inlineTo" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.inlineStep" />
                     </el-col>
                 </el-row>
                  <el-row style="width:100%;margin-top:10px;">
@@ -139,13 +145,13 @@
                         <span>Crossline</span>
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.xlineFrom" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.xlineTo" />
                     </el-col>
                     <el-col style="width:25%">
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="workZone.xlineStep" />
                     </el-col>
                 </el-row>
                 </div>
@@ -166,11 +172,11 @@
                 <div class="form-item-body">
                     <div>
                         <span style="display:inline-block;width:200px;">Accumulated Energy:</span>
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="parameters[0].value" />
                     </div>
                     <div style="margin-top:15px;">
                         <span style="display:inline-block;width:200px;">Well Label:</span>
-                        <input style="width:100px;" />
+                        <input style="width:100px;" v-model="parameters[1].value" />
                     </div>
                 </div>
 
@@ -185,10 +191,10 @@
                     <span class="form-item-title-span">Selected Attributes</span>
                 </div>
                 <div class="form-item-body">
-                    <el-table :data="tableData" style="width:200px;">
+                    <el-table :data="chosedFileList" style="width:200px;">
                         <el-table-column
                         label="selected features"
-                        prop="name">
+                        prop="realName">
                         </el-table-column>
                     </el-table>
                 </div>
@@ -196,9 +202,7 @@
                 
                 <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
                 <div style="margin-top:30px;">
-                    <el-button  @click="()=>{
-                       this.$router.push('/');
-                    }">Run</el-button>
+                    <el-button  @click="startCalculate">Run</el-button>
                     <el-button  @click="()=>{this.$router.push('/')}">Save</el-button>
                 </div>
                 <div style="width:100%;height:50px;"></div>
@@ -217,7 +221,7 @@
             window.console.log(_);
             
                 data.push({
-                    key: 1,
+                    key: 1000,
                     label: 'SRC_dn_rms_poststackamplitude',
                     disabled: false
                 });
@@ -231,15 +235,89 @@
                 select2:'0',
                 select3:'0',
                 select4:'0',
-                select5:'0',
+                select5:'T-Test',
                 data: generateData(),
                 value: [],
                 step:1,
-                tableData:[
+                workZone:{
+                    id:'',
+                    inlineFrom:0,
+                    inlineTo:0,
+                    inlineStep:0,
+                    xlineFrom:0,
+                    xlineTo:0,
+                    xlineStep:0,
+                    timeFrom:0,
+                    timeStep:0,
+                },
+                tableData:[],
+                downloadFileList:[],
+                chosedFileList:[],
+                parameters:[
                     {
-                        name:'SRC_dn_rms_poststackamplitude'
+                        name:'Accumlated Energy',
+                        value:''
+                    },
+                    {
+                        name:'Well Label',
+                        value:''
                     }
                 ]
+            }
+        },
+        mounted() {
+            //获取文件列表
+            let _this = this;
+            this.$axios({
+                method:'get',
+                url: this.$Global.server_config.url+'/downloadFile/fileList?userId='+this.$Global.server_config.userId,
+
+            }).then((response)=>{
+                _this.downloadFileList = response.data;
+                for(let index = 0; index < _this.downloadFileList.length; index++){
+                    _this.tableData.push({
+                        key: index,
+                        label: _this.downloadFileList[index].realName,
+                        disabled: false
+                    });
+                }
+                _this.$data.data = _this.tableData;
+
+            });
+        },
+        methods:{
+            startCalculate(){
+                let _this = this;
+                let files = [];
+                for(let index = 0; index < this.chosedFileList.length; index++){
+                    files.push(this.chosedFileList[index].id);
+                }
+                this.$axios({
+                    method:'post',
+                    url:'/datamining',
+                    data:{
+                        dataMiningMethod: this.select5,
+                        workZone: this.workZone,
+                        subProjectId: this.$Global.projectDetails.subProjectList[1].id,
+                        fileId:files,
+                        parameters: this.parameters
+                    }
+                }).then((response)=>{
+                    window.console.log(response);
+                    _this.$router.push('/');
+                })
+            },
+            changeChoose(current, direction, keys){
+                window.console.log(current);
+                window.console.log(direction);
+                window.console.log(keys);
+                let temp = [];
+                for(let index = 0;index < current.length; index++){
+                    temp.push(this.downloadFileList[current[index]])
+                }
+                this.chosedFileList = temp;
+                window.console.log(this.chosedFileList);
+
             }
         }
     }

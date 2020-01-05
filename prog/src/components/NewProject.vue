@@ -21,9 +21,24 @@
                     <span class="form-item-title-span">SEG-Y File Name</span>
                 </div>
                 <div class="form-item-body">
-                    <span>File:</span>
-                    <input type="file" id="file" @click="uploadFile" style="margin-left: 10px;"/>
-                    
+                    <span>Choose a already uploaded segy data file</span>
+                    <br/><br/>
+                    <div>
+                        <span v-show="hasChosen">you have chosen file <strong>"{{chosenFile}}"</strong></span>
+                        <el-table :data="downloadFileList" v-show="!hasChosen">
+                            <el-table-column
+                                prop="realName"
+                                label="file name"
+                                >
+                            </el-table-column>
+                            <el-table-column>
+                                <template slot-scope="scope">
+                                    <el-button type="primary" size="small" @click="chooseSegy(scope.$index)">select</el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+
                 </div>
                 <div class="form-item-title no-first">
                     <span class="form-item-title-span">Line Header</span>
@@ -217,7 +232,7 @@
                 </div>
             </div>
 
-            <div v-if="active==2">
+            <div v-if="active===2">
                 <div class="step3-panel">
                     <el-row style="width:100%">
                         <el-col style="width: 48%;">
@@ -551,11 +566,14 @@
         name: "NewProject",
         data(){
             return{
+                chosenFile:'',
+                hasChosen: false,
+                downloadFileList:[],
                 tempvalue:'<',
                 active: 0,
                 chooseTime:'',
                 chooseUnit:'Masters',
-                chooseFormat:'',
+                chooseFormat:'IBM',
                 chooseDisplay:'Wiggle',
                 chooseSurvey:'XY Coordinate from 3 point definition',
                 trace:1,
@@ -610,6 +628,16 @@
             }
         },
         mounted() {
+            //获取文件列表
+            let _this = this;
+            this.$axios({
+                method:'get',
+                url: this.$Global.server_config.url+'/downloadFile/fileList?userId='+this.$Global.server_config.userId,
+
+            }).then((response)=>{
+                _this.downloadFileList = response.data;
+            });
+
             for(let index = 1; index<461/4;index++){
                 this.$data.tableData.push(
                     {
@@ -621,20 +649,42 @@
                 )
                 
             }
+
+
             this.tableData[2].Value=0;
             
             this.tableData[3].Value=0;
             this.tableData[3].Description='Feild...';
             this.tableData[4].Value=0;
             this.tableData[4].Description='Feild...';
-            this.tableData[5].Value=431210.0
-            this.tableData[6].Value=1
-            this.tableData[7].Value=1
+            this.tableData[5].Value=431210.0;
+            this.tableData[6].Value=1;
+            this.tableData[7].Value=1;
             
         },
         methods:{
+            chooseSegy(index){
+                this.isLoading = true;
+                window.console.log(index);
+                this.$data.chosenFile = this.$data.downloadFileList[index].realName;
+                this.$data.chosenFileId = this.$data.downloadFileList[index].id;
+                this.$data.hasChosen = true;
+                let _this = this;
+                this.$axios({
+                    method:'post',
+                    url:'/segy',
+                    params:{
+                        subProjectId: this.$Global.projectDetails.subProjectList[0].id,
+                        fileId: this.$data.chosenFileId
+                    }
+                }).then((response)=>{
+                    window.console.log(response);
+                    _this.isLoading = false;
+                })
+
+            },
             checkEcharts(){
-                let myChart = this.$echarts.init(document.getElementById('myChart'))
+                let myChart = this.$echarts.init(document.getElementById('myChart'));
             // 绘制图表
             let k = [];
             
@@ -673,44 +723,16 @@
                 
                                                                
             },
-            /**
-             *
-             * import segy data
-             */
-            uploadFile(){
-                //let file = document.getElementById("file").files[0];
-                let _this = this;
-                window.console.log(this.$global.base_url);
-                let a = {
-                    segyFileName:"0d68edc5-9717-4ad2-873f-a3d64472e62f.segy"
-                }
-                fetch(this.$global.base_url+'/segy/',{
-                    method:'post',
-                    mode:'cors',
-                    headers:{
-                        'Access-Control-Allow-Origin':'*',
-                        'Content-Type' : 'application/json'
-                    },
-                    body:JSON.stringify(a)
 
-                }).then(res=>res.json())
-                .then((response)=>{
-                     _this.$data.segyData = response.data;
-                     _this.$data.chooseFormat = 'IEEE';
-                     
-                    window.console.log(response.data);
-                })
-
-
-                
-            },
             clickPreview(){
+                window.console.log(this.$Global.projectDetails);
                 let _this = this;
                 this.$axios({
                     method:'get',
-                    url:'/segy/trace/1',
+                    url:'/segy/trace/field',
                     params:{
-                        segyFileName:"0d68edc5-9717-4ad2-873f-a3d64472e62f.segy"
+                        subProjectId: this.$Global.projectDetails.subProjectList[0].id,
+                        fileId: this.chosenFileId
                     },
                     headers:{
                         'Content-Type':'application/json'
@@ -727,7 +749,7 @@
                     method:'get',
                     url:'/segy/trace/'+val,
                     params:{
-                        segyFileName:"0d68edc5-9717-4ad2-873f-a3d64472e62f.segy"
+                        subProjectId: this.$Global.projectDetails.subProjectList[0].id
                     },
                     headers:{
                         'Content-Type':'application/json'
@@ -755,7 +777,7 @@
                     method:'get',
                     url:'/segy/trace/field',
                     params:{
-                        segyFileName:"0d68edc5-9717-4ad2-873f-a3d64472e62f.segy"
+                        subProjectId: this.$Global.projectDetails.subProjectList[0].id
                     },
                     headers:{
                         'Content-Type':'application/json'

@@ -1,20 +1,37 @@
 <template>
-    <div class="projects-pad">
+    <div class="projects-pad" >
+      <div v-loading="v_loading">
       <el-dialog :visible.sync="dialogVisible"  title="please choose a file" style="width:50%;min-width:600px;margin-left:auto;margin-right:auto;">
         <div>
-          <span>choose a file:</span>
+          <span>input </span>
           <input type="file" />
         </div>
         <div style="margin-top:30px;">
           <el-button type="primary" @click="()=>{this.$router.push('/LoadColormap')}">finish</el-button>
           <el-button type="primary" @click="()=>{this.$data.dialogVisible=false;}">Cancel</el-button>
-
-
+        </div>
+      </el-dialog>
+      <el-dialog :visible.sync="dialogVisibleNew"  title="please choose a file" style="width:50%;min-width:600px;margin-left:auto;margin-right:auto;" v-loading="loading1">
+        <div>
+          <el-form :model="formNewProject">
+            <el-form-item
+              label="project name:"
+            >
+              <el-input v-model="formNewProject.name"></el-input>
+            </el-form-item>
+          </el-form>
+        </div>
+        <div style="margin-top:30px;">
+          <el-button type="primary" @click="newProject">finish</el-button>
+          <el-button type="primary" @click="()=>{this.$data.dialogVisibleNew=false;}">Cancel</el-button>
         </div>
       </el-dialog>
       <div>
         <el-menu  class="el-menu-demo" mode="horizontal"  :router="true">
-          <el-menu-item index="/">File</el-menu-item>
+          <el-submenu index="0">
+            <template slot="title">File</template>
+            <el-menu-item @click="dialogVisibleNew=true" >New Project</el-menu-item>
+          </el-submenu>
           <el-submenu index="2">
             <template slot="title">Import</template>
             <el-menu-item index="NewProject" >Import Segy Data</el-menu-item>
@@ -45,7 +62,7 @@
       </div>
       <div style="width:100%;height:40px;border-bottom: 1px solid lightgray">
         <div style="float: left">
-          <div class="icon-image">
+          <div class="icon-image" >
           </div>
         </div>
         <div style="float: left">
@@ -62,8 +79,9 @@
         </div>
 
       </div>
-      <div style="margin-top:20px;width: 80%;">
-        <el-tabs type="border-card" style="box-shadow:0 0 0 white">
+      <div style="margin-top:20px;width: 80%;" >
+        <span v-if="!haveNewProject">No Project. Please Create a New Project</span>
+        <el-tabs type="border-card" style="box-shadow:0 0 0 white" v-if="haveNewProject">
 
           <el-tab-pane label="Seismic">
             <el-tree :data="data" :props="defaultProps" ref="tree"  show-checkbox></el-tree>
@@ -95,7 +113,7 @@
         
       </div>
 
-     
+      </div>
     </div>
 
 </template>
@@ -104,9 +122,6 @@
   /* eslint-disable */
   export default {
   name: 'HelloWorld',
-  props: {
-    msg: String
-  },
   data(){
     return{
       data: [ {
@@ -123,6 +138,13 @@
           label: 'label'
         },
         dialogVisible:false,
+      dialogVisibleNew:false,
+      haveNewProject: this.$Global.hasProject,
+      formNewProject:{
+        name:''
+      },
+      v_loading: false,
+      loading1: false,
     }
   },
   mounted(){
@@ -164,6 +186,29 @@
     }
   },
   methods:{
+    newProject(){
+      this.v_loading=true;
+
+      this.dialogVisibleNew = false;
+      let _this = this;
+      this.$axios({
+        method:'post',
+        url:'/project',
+        params:{
+          name: this.formNewProject.name,
+          userId: this.$Global.server_config.userId
+        }
+      }).then((response)=>{
+        _this.$Global.projectDetails = response.data.data;
+        _this.$Global.hasProject=true;
+        _this.haveNewProject = true;
+        _this.v_loading=false;
+        _this.$message({
+          type:'success',
+          message:'project created successfully!'
+        })
+      })
+    },
     getCheckedNodes(){
       /* eslint-disable*/
       console.log(this.$refs.tree.getCheckedNodes());

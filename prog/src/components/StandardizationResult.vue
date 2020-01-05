@@ -55,7 +55,7 @@
                     <el-button type="primary" @click="()=>{this.$router.push('/')}">OK</el-button>
                     <el-button type="primary" @click="()=>{this.$router.push('/')}">Cancel</el-button>
                     <el-button type="primary" @click="()=>{this.$router.push('/')}">Cancel All</el-button>
-                    <el-button type="primary" @click="()=>{this.$router.push({path:'/',query:{a:'a'}})}">Apply</el-button>
+                    <el-button type="primary" @click="startCalculate">Apply</el-button>
             </div>
 
             </div>
@@ -87,11 +87,14 @@
             }
         },
         mounted(){
+            if(this.$route.query){
+                this.choosedData = this.$route.query.file.realName;
+            }
            
             /**
              * 修改图表处
              */
-            let myChart = this.$echarts.init(document.getElementById('myChart1'))
+            let myChart = this.$echarts.init(document.getElementById('myChart1'));
             // 绘制图表
             myChart.setOption({
                 xAxis: {
@@ -112,12 +115,37 @@
         },
         methods:{
             changeValue(val){
-                if(val=='Use Percent%'){
-                    this.$data.valueChange=true;
-                    
-                }else{
-                    this.$data.valueChange=false;
+                if (val === 'Use Percent%') {
+
+                    this.$data.valueChange = true;
+
+                } else {
+                    this.$data.valueChange = false;
                 }
+
+            },
+            startCalculate(){
+                let _this = this;
+                this.$axios({
+                    method:'post',
+                    url:'/datamining',
+                    data:{
+                        dataMiningMethod: this.$route.query.radio,
+                        parameters:[],
+                        workZone:{
+
+                        },
+                        subProjectId: this.$Global.projectDetails.subProjectList[1].id,
+                        fileIdList:[
+                            this.$route.query.file.id
+                        ]
+                    }
+                }).then((response)=>{
+                    window.console.log(response);
+                    _this.$router.push({path:'/',query:{a:'a'}})
+                })
+
+                // this.$router.push({path:'/',query:{a:'a'}})
             }
         }
     }

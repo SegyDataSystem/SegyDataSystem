@@ -7,7 +7,7 @@
 
             <el-container>
                 <el-aside>
-                    <el-menu :default-active="defaultActive" style="height: 300px">
+                    <el-menu  style="height: 300px">
                         <el-menu-item index="0"  @click="()=>{this.$data.useIndex=0;}">
                             <i class="el-icon-menu"></i>
                             <span slot="title">single file upload</span>
@@ -20,10 +20,14 @@
                             <i class="el-icon-document"></i>
                             <span slot="title">Quick Upload</span>
                         </el-menu-item>
-                        <el-menu-item index="3" @click="()=>{this.$data.useIndex=3;}">
-                            <i class="el-icon-upload"></i>
-                            <span slot="title">Stop Upload</span>
+                        <el-menu-item index="3" @click="()=>{this.$data.useIndex=3;this.reloadDownload();}">
+                            <i class="el-icon-download"></i>
+                            <span slot="title">File Download</span>
                         </el-menu-item>
+<!--                        <el-menu-item index="3" @click="()=>{this.$data.useIndex=3;}">-->
+<!--                            <i class="el-icon-upload"></i>-->
+<!--                            <span slot="title">Stop Upload</span>-->
+<!--                        </el-menu-item>-->
                     </el-menu>
                 </el-aside>
                 <el-main class="my-main">
@@ -32,64 +36,43 @@
                             <span style="font-size: 25px;">Upload Single File</span>
                                 <div style="padding-left: 20px;">
                                     <uploader
+                                            key="0"
                                             browse_button="browse_button"
+                                            :url="server_config.url+'/uploadFile/normal'"
                                             :multi_selection="false"
+                                            :FilesAdded="filesAddedSingle"
+                                            :multipart_params="singleOptions"
                                             :filters="{
                                               max_file_size : '400kb'
                                             }"
+                                            @inputUploader="inputUploaderSingle"
                                     />
                                     <div style="margin-top: 30px;">
                                         <span>File Type:</span>
-                                        <el-select v-model="selectType" size="small" style="margin-left: 5px;">
+                                        <el-select v-model="singleOptions.type" size="small" style="margin-left: 5px;">
                                             <el-option value="Horizon"></el-option>
+                                            <el-option value="Seismic"></el-option>
+                                            <el-option value="Interval"></el-option>
+                                            <el-option value="Well"></el-option>
+                                            <el-option value="Fault"></el-option>
                                         </el-select>
                                     </div>
                                     <div style="height: 20px;">
 
                                     </div>
                                     <el-button id="browse_button" size="small" type="primary">select file</el-button>
-            <!--                        <span v-for="file in files">{{file.name}}</span>-->
-                                    <el-button type="danger"  size="small">start upload</el-button>
+                                    <el-button type="danger"  size="small" @click="uploadStartSingle">start upload</el-button>
+                                    <div style="font-size: 14px;margin-top: 10px;" v-for="(file,index) in filesSingle" :key="index">{{file.name}}</div>
 
-                                    <el-dialog title="正在上传" :visible.sync="dialogTableVisible">
-                                        <el-progress v-if="files.length>0" :text-inside="true" :stroke-width="20" :percentage="files[0].percent"></el-progress>
+                                    <el-dialog title="正在上传" :visible.sync="dialogTableVisibleSingle">
+                                        <el-progress v-if="filesSingle.length>0" :text-inside="true" :stroke-width="20" :percentage="filesSingle[0].percent"></el-progress>
                                     </el-dialog>
                                     <br/>
                                     <br/>
                                     <el-tag type="warning">file max length:400kb</el-tag>
                                 </div>
                         </div>
-                        <!--下载列表-->
-                        <div style="padding-left: 5px;text-align: left;margin-top:40px;">
-                            <span style="font-size: 25px;">Already Uploaded File</span>
-                            <div style="padding-left: 20px;">
-                                <el-table
 
-                                        :data="tableData"
-                                        style="width: 70%; margin: 10px 10px;">
-                                    <el-table-column
-                                            label="File Name">
-                                        <template slot-scope="scope">
-                                            <span>{{scope.row.name}}</span>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column
-                                            label="Size">
-                                        <template slot-scope="scope">
-                                            <span>{{scope.row.size}}</span>
-                                        </template>
-                                    </el-table-column>
-
-                                    <el-table-column
-                                            label="Operation">
-                                        <template>
-                                            <el-button type="primary" size="small">download</el-button>
-                                            <el-button type="danger" size="small">delete</el-button>
-                                        </template>
-                                    </el-table-column>
-                                </el-table>
-                            </div>
-                        </div>
 
                     </div>
                     <div v-if="useIndex===1">
@@ -97,18 +80,30 @@
                             <span style="font-size: 25px;">Upload Big File</span>
                             <div style="padding-left: 20px;margin-top: 20px;">
                                 <uploader
-                                        browse_button="browse_button"
-
+                                        key="1"
+                                        browse_button="browse_button_big"
+                                        :url="server_config.url+'/uploadFile/big'"
+                                        chunk_size="2MB"
+                                        :filters="{prevent_duplicates:true}"
+                                        :multipart_params="BigOptions"
+                                        :FilesAdded="filesAddedBig"
+                                        :BeforeUpload="beforeUploadBig"
+                                        @inputUploader="inputUploaderBig"
                                 />
                                 <span>File Type: </span>
-                                <el-select v-model="selectType" size="small">
+                                <el-select v-model="BigOptions.type" size="small">
                                     <el-option value="Horizon"></el-option>
+                                    <el-option value="Seismic"></el-option>
+                                    <el-option value="Interval"></el-option>
+                                    <el-option value="Well"></el-option>
+                                    <el-option value="Fault"></el-option>
                                 </el-select>
                                 <div style="width: 100%;height: 20px;"></div>
-                                <el-button type="primary" id="browse_button" size="small">Select File</el-button>
+                                <el-button type="primary" id="browse_button_big" size="small">Select File</el-button>
+                                <el-button type="primary" @click="BigFileStart" size="small">Start</el-button>
                                 <br/>
                                 <el-table
-                                        :data="tableData"
+                                        :data="tableDataBig"
                                         style="width: 100%; margin: 10px 10px;">
                                     <el-table-column
                                             label="File Name">
@@ -140,47 +135,11 @@
                                     </el-table-column>
                                 </el-table>
                                 <br/>
-                                <el-button type="primary" @click="up.start()" size="small">Start</el-button>
+
 
                             </div>
                         </div>
-                        <!--下载列表-->
-                        <div style="padding-left: 5px;text-align: left;margin-top:40px;">
-                            <span style="font-size: 25px;">Already Uploaded File</span>
-                            <div style="padding-left: 20px;">
-                                <el-table
 
-                                        :data="tableData"
-                                        style="width: 70%; margin: 10px 10px;">
-                                    <el-table-column
-                                            label="File Name">
-                                        <template slot-scope="scope">
-                                            <span>{{scope.row.name}}</span>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column
-                                            label="size">
-                                        <template slot-scope="scope">
-                                            <span>{{scope.row.size}}</span>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column
-                                            label="Type">
-                                        <template slot-scope="scope">
-                                            <span>{{scope.row.size}}</span>
-                                        </template>
-                                    </el-table-column>
-
-                                    <el-table-column
-                                            label="Operation">
-                                        <template>
-                                            <el-button type="primary" size="small">download</el-button>
-                                            <el-button type="danger" size="small">delete</el-button>
-                                        </template>
-                                    </el-table-column>
-                                </el-table>
-                            </div>
-                        </div>
 
                     </div>
 
@@ -189,18 +148,29 @@
                             <span style="font-size: 25px;">Quick Upload</span>
                             <div style="padding-left: 20px;margin-top: 20px;">
                                 <uploader
-                                        browse_button="browse_button"
-
+                                        key="2"
+                                        browse_button="browse_button_quick"
+                                        :url="server_config.url+'/uploadFile/quick'"
+                                        chunk_size="2MB"
+                                        :filters="{prevent_duplicates:true}"
+                                        :FilesAdded="filesAddedQuick"
+                                        :BeforeUpload="beforeUploadQuick"
+                                        @inputUploader="inputUploaderQuick"
                                 />
                                 <span>File Type: </span>
                                 <el-select v-model="selectType" size="small">
                                     <el-option value="Horizon"></el-option>
+                                    <el-option value="Seismic"></el-option>
+                                    <el-option value="Interval"></el-option>
+                                    <el-option value="Well"></el-option>
+                                    <el-option value="Fault"></el-option>
                                 </el-select>
                                 <div style="width: 100%;height: 20px;"></div>
-                                <el-button type="primary" id="browse_button" size="small">Select File</el-button>
+                                <el-button type="primary" id="browse_button_quick" size="small">Select File</el-button>
+                                <el-button type="primary" @click="uploadStartQuick()" size="small">start</el-button>
                                 <br/>
                                 <el-table
-                                        :data="tableData"
+                                        :data="tableDataQuick"
                                         style="width: 100%; margin: 10px 10px;">
                                     <el-table-column
                                             label="File Name">
@@ -227,50 +197,21 @@
                                     <el-table-column
                                             label="Operation">
                                         <template slot-scope="scope">
-                                            <el-button type="danger" @click="deleteFile(scope.row.id)">delete</el-button>
+                                            <el-button type="danger" @click="deleteFileQuick(scope.row.id)">delete</el-button>
                                         </template>
                                     </el-table-column>
                                 </el-table>
                                 <br/>
-                                <el-button type="primary" @click="up.start()" size="small">start</el-button>
+
+
 
                             </div>
                         </div>
-                        <!--下载列表-->
-                        <div style="padding-left: 5px;text-align: left;margin-top:40px;">
-                            <span style="font-size: 25px;">Already Uploaded File</span>
-                            <div style="padding-left: 20px;">
-                                <el-table
 
-                                        :data="tableData"
-                                        style="width: 70%; margin: 10px 10px;">
-                                    <el-table-column
-                                            label="File Name">
-                                        <template slot-scope="scope">
-                                            <span>{{scope.row.name}}</span>
-                                        </template>
-                                    </el-table-column>
-                                    <el-table-column
-                                            label="size">
-                                        <template slot-scope="scope">
-                                            <span>{{scope.row.size}}</span>
-                                        </template>
-                                    </el-table-column>
-
-                                    <el-table-column
-                                            label="Operation">
-                                        <template>
-                                            <el-button type="primary" size="small">download</el-button>
-                                            <el-button type="danger" size="small">delete</el-button>
-                                        </template>
-                                    </el-table-column>
-                                </el-table>
-                            </div>
-                        </div>
 
 
                     </div>
-                    <div v-if="useIndex===3">
+                    <div v-if="useIndex===4">
                         <div style="padding-left: 5px;text-align: left">
                             <span style="font-size: 25px;">Stop Upload</span>
                             <div style="padding-left: 20px;">
@@ -365,6 +306,43 @@
 
                         </div>
                     </div>
+                    <div v-if="useIndex===3">
+                        <div style="padding-left: 5px;text-align: left">
+                            <div style="padding-left: 5px;text-align: left;margin-top:0px;">
+                                <span style="font-size: 25px;">Already Uploaded File</span>
+                                <div style="padding-left: 20px;margin-top: 20px;">
+                                    <el-table
+                                            :data="tableDataDownload"
+                                            style="width: 70%; margin: 10px 10px;">
+                                        <el-table-column
+                                                label="File Name"
+                                                prop="realName"
+                                        >
+                                        </el-table-column>
+                                        <el-table-column
+                                                label="savedName"
+                                                prop="savedName"
+                                        >
+                                        </el-table-column>
+                                        <el-table-column
+                                                label="md5"
+                                                prop="md5"
+                                        >
+                                        </el-table-column>
+                                        <el-table-column
+                                                label="operation">
+                                            <template slot-scope="scope">
+                                                <el-button type="primary" size="small" @click="downloadFileQuick(scope.$index)">download</el-button>
+                                            </template>
+                                        </el-table-column>
+                                    </el-table>
+                                </div>
+                            </div>
+
+                            <br/>
+
+                        </div>
+                    </div>
                 </el-main>
             </el-container>
         </el-container>
@@ -373,6 +351,7 @@
 
 <script>
     import Uploader from "./Uploader";
+    import FileMd5 from '../model/file-md5.js';
     export default {
         name: 'FleManage',
         components:{
@@ -380,21 +359,251 @@
         },
         data () {
             return {
+                server_config: this.$Global.server_config,
                 defaultActive: 0,
                 useIndex:0,
                 dialogTableVisible: false,
+                dialogTableVisibleSingle: false,
+                filesSingle:[],
                 files:[],
-                up: {},
+                up:{},
+                upSingle: {},
                 tableData:[{}],
+                tableDataBig:[],
                 selectType: 'Horizon',
+
+                singleOptions:{
+                    type: 'Horizon',
+                    isPublic: false,
+                    userId: '10000'
+                },
+                //big file
+                BigOptions:{
+                    type: 'Horizon',
+                    isPublic: false,
+                    userId: '10000'
+                },
+                upBig:{
+
+                },
+                filesBig:[],
+                dialogTableVisibleBig: false,
+
+
+                filesQuick:[],
+                upQuick:{},
+                quickOptions:{
+                    type: 'Horizon',
+                    isPublic: false,
+                    userId: '10000'
+                },
+                tableDataQuick: [],
+
+                tableDataDownload:[]
+
+
 
             }
         },
+        computed:{
+            statusSingle() {
+                return this.filesSingle.length > 0 ? this.filesSingle[0].status : null;
+            },
 
+        },
+        watch:{
+            statusSingle() {
+                if (this.statusSingle === 5) {
+                    this.$confirm('文件上传成功', '提示', {
+                        confirmButtonText: '确定',
+                        type: 'warning'
+                    }).then(() => {
+                        this.dialogTableVisibleSingle = false;
+                    });
+                }
+            },
+            filesBig: {
+                handler() {
+                    this.tableDataBig = [];
+                    this.filesBig.forEach((e) => {
+                        this.tableDataBig.push({
+                            name: e.name,
+                            size: e.size,
+                            status: e.status,
+                            id: e.id,
+                            percent: e.percent
+                        });
+                    });
+                },
+                deep: true
+            },
+            filesQuick: {
+                handler() {
+                    this.tableDataQuick = [];
+                    this.filesQuick.forEach((e) => {
+                        this.tableDataQuick.push({
+                            name: e.name,
+                            size: e.size,
+                            status: e.status,
+                            id: e.id,
+                            percent: e.percent
+                        });
+                    });
+                },
+                deep: true
+            }
+        },
+        mounted(){
+            let _this = this;
+            this.$axios({
+                method: 'get',
+                url: this.$Global.server_config.url+'/downloadFile/fileList',
+                params:{
+                    userId: '10000'
+                }
 
+            }).then((response)=>{
+                _this.$data.tableDataDownload = response.data;
+                window.console.log(response.data);
+            })
+
+        },
         methods: {
+            reloadDownload(){
+                let _this = this;
+                this.$axios({
+                    method: 'get',
+                    url: this.$Global.server_config.url+'/downloadFile/fileList',
+                    params:{
+                        userId: '10000'
+                    }
+
+                }).then((response)=>{
+                    _this.$data.tableDataDownload = response.data;
+                    window.console.log(response.data);
+                })
+            },
             redirectUrl(val){
                 this.$router.push(val);
+            },
+            filesAddedSingle(up){
+                if (up.files.length > 1) {
+                    up.removeFile(up.files[0])
+                }
+            },
+            inputUploaderSingle(up) {
+                this.upSingle = up;
+                this.filesSingle = up.files;
+                window.console.log('11111111dw');
+                // window.console.log(this.upS);
+            },
+            uploadStartSingle() {
+                this.dialogTableVisibleSingle = true;
+                this.upSingle.start();
+
+
+            },
+
+
+            inputUploaderBig(up) {
+                window.console.log('dwdwdw');
+                this.upBig = up;
+                this.filesBig = up.files;
+            },
+            filesAddedBig(up, files) {
+                files.forEach((f) => {
+                    f.status = -1;
+                    FileMd5(f.getNative(), (e, md5) => {
+                        f["md5"] = md5;
+                        f.status = 1;
+                    });
+                });
+            },
+            deleteFile(id) {
+                let file = this.upBig.getFile(id);
+                this.upBig.removeFile(file);
+            },
+            beforeUploadBig(up, file) {
+                up.setOption("multipart_params", {"size":file.size,"type":this.BigOptions.type,"md5":file.md5,"userId":this.BigOptions.userId,"isPublic":this.$data.BigOptions.isPublic});
+            },
+            BigFileStart(){
+                window.console.log(this.upBig);
+                this.upBig.start();
+            },
+
+            //quick
+            inputUploaderQuick(up) {
+                this.upQuick = up;
+                this.filesQuick = up.files;
+            },
+            filesAddedQuick(up, files) {
+                files.forEach((f) => {
+                    f.status = -1;
+                    FileMd5(f.getNative(), (e, md5) => {
+                        f["md5"] = md5;
+                        f.status = 1;
+                    });
+                });
+            },
+            deleteFileQuick(id) {
+                let file = this.upQuick.getFile(id);
+                this.upQuick.removeFile(file);
+            },
+            beforeUploadQuick(up, file) {
+                up.setOption("multipart_params", {"size":file.size,"md5":file.md5});
+            },
+            uploadStartQuick() {
+                let _this = this;
+                let count = 0, size = this.filesQuick.length;
+                this.filesQuick.forEach((e) => {
+                    if (e.status == 1) {
+                        this.$axios.get(this.server_config.url+'/quickupload/?md5='+e.md5)
+                            .then((response) => {
+                                count += 1;
+                                window.console.log(count);
+                                if (!response.data) {
+                                    e.status = 5;
+                                }
+                                if (count == size){
+                                    _this.upQuick.start();
+                                }
+                            })
+                    }
+                });
+
+            },
+            downloadFileQuick(id){
+                window.console.log(id);
+                // this.$axios({
+                //     method:'get',
+                //     url: this.$Global.server_config.url+'/downloadFile/'+'1213762585929601025',
+                //     responseType:'blob'
+                // }).then((response)=>{
+                //     window.console.log(response);
+                // })
+                let _this = this;
+                this.$axios.get(this.$Global.server_config.url+'/downloadFile/'+_this.$data.tableDataDownload[id].id,{responseType: 'blob'}).then((res) => {
+                    if (!res) {
+                        this.$message.error("下载模板文件失败");
+                        return false;
+                    }
+                    const blob = new Blob([res.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8'});
+                    const downloadElement = document.createElement('a');
+                    const href = window.URL.createObjectURL(blob);
+                    // let contentDisposition = res.headers['Content-Disposition'];  //从response的headers中获取filename, 后端response.setHeader("Content-disposition", "attachment; filename=xxxx.docx") 设置的文件名;
+
+                    // let patt = new RegExp("fileName=([^;]+\\.[^\\.;]+);*");
+                    // let result = patt.exec(contentDisposition);
+                    // window.console.log(res);
+                    let filename = _this.$data.tableDataDownload[id].realName;
+                    downloadElement.style.display = 'none';
+                    downloadElement.href = href;
+                    downloadElement.download = filename ; //下载后文件名
+                    document.body.appendChild(downloadElement);
+                    downloadElement.click(); //点击下载
+                    document.body.removeChild(downloadElement); //下载完成移除元素
+                    window.URL.revokeObjectURL(href); //释放掉blob对象
+                })
             }
         }
     }
