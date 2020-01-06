@@ -1,5 +1,23 @@
 <template>
     <div id="NewProject" v-loading="isLoading">
+        <el-dialog :visible.sync="dialogVisible" title="Line Header Preview" style="width:800px;margin-left: auto;margin-right:auto;">
+            <el-table
+                    :data="tableData"
+                    style="border: 1px solid lightgray;height:300px;"
+                    stripe
+                    height="250"
+            >
+                <el-table-column label="Bytes" >
+                    <template slot-scope="scope">
+                        <span>{{scope.$index*4}}-{{(scope.$index+1)*4-1}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="description" label="Description"></el-table-column>
+                <el-table-column label="format">Integer</el-table-column>
+                <el-table-column prop="value" label="Value"></el-table-column>
+            </el-table>
+
+        </el-dialog>
         
         <div class="import-title-panel">
             <span class="import-title">
@@ -84,7 +102,7 @@
                 </div>
 
                 <div class="button-panel">
-                    <el-button type="primary" @click="()=>{this.$data.active=1;this.getTraceField()}">Next</el-button>
+                    <el-button type="primary" @click="()=>{this.$data.active=1;this.getTraceHeader()}">Next</el-button>
                     <el-button @click="()=>{this.$router.push('/')}">Cancel</el-button>
                 </div>
             </div>
@@ -101,11 +119,16 @@
                                     :data="tableData"
                                     style="border: 1px solid lightgray;height:300px;"
                                     stripe
+                                    height="250"
                                 >
-                                    <el-table-column prop="Bytes" label="Bytes"></el-table-column>
-                                    <el-table-column prop="Description" label="Description"></el-table-column>
-                                    <el-table-column label="Format">Integer</el-table-column>
-                                    <el-table-column prop="Value" label="Value"></el-table-column>
+                                    <el-table-column label="Bytes" >
+                                        <template slot-scope="scope">
+                                            <span>{{scope.$index*4}}-{{(scope.$index+1)*4-1}}</span>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column prop="description" label="Description"></el-table-column>
+                                    <el-table-column label="format">Integer</el-table-column>
+                                    <el-table-column prop="value" label="Value"></el-table-column>
                                 </el-table>
                             </div>
 
@@ -217,7 +240,7 @@
                                     <el-button size="small" type="primary" style="width: 150px;" disabled>EBCDIC</el-button>
                                 </div>
                                 <div style="margin-top: 10px;">
-                                    <el-button size="small" type="primary" style="width: 150px;">Line Header...</el-button>
+                                    <el-button size="small" type="primary" style="width: 150px;" @click="seeLineHeader">Line Header...</el-button>
                                 </div>
                             </div>
                         </el-col>
@@ -566,6 +589,7 @@
         name: "NewProject",
         data(){
             return{
+                dialogVisible: false,
                 chosenFile:'',
                 hasChosen: false,
                 downloadFileList:[],
@@ -582,6 +606,7 @@
                 checkFloat:true,
                 checkOverrideScaling: false,
                 segyData:'',
+                chosedFileId:'',
                 in1:'1',
                 in2:'1',
                 in3:'1',
@@ -624,7 +649,8 @@
                 s2in6:'4',
                 s2in7:'185',
                 s2in8:'4',
-                end:[]
+                end:[],
+                tableDataDialog:[],
             }
         },
         mounted() {
@@ -638,31 +664,63 @@
                 _this.downloadFileList = response.data;
             });
 
-            for(let index = 1; index<461/4;index++){
-                this.$data.tableData.push(
-                    {
-                        Bytes:' '+index.toString()+'-'+(index+3).toString(),
-                        Description:'Trace...',
-                        Format:'Integer',
-                        Value:'431210.0'
-                    }
-                )
-                
-            }
 
 
-            this.tableData[2].Value=0;
-            
-            this.tableData[3].Value=0;
-            this.tableData[3].Description='Feild...';
-            this.tableData[4].Value=0;
-            this.tableData[4].Description='Feild...';
-            this.tableData[5].Value=431210.0;
-            this.tableData[6].Value=1;
-            this.tableData[7].Value=1;
+
+
             
         },
         methods:{
+            seeLineHeader(){
+                let _this = this;
+                this.isLoading=true;
+
+                this.$axios({
+                    method:'get',
+                    url:'/segy/binheader',
+                    params:{
+                        subProjectId: this.$Global.projectDetails.subProjectList[0].id
+                    },
+                    headers:{
+                        'Content-Type':'application/json'
+                    }
+                }).then((response)=>{
+                    window.console.log(response.data.data);
+                    _this.isLoading=false;
+                    for(let item in response.data.data){
+                        _this.tableDataDialog.push({
+                            description: item,
+                            format: 'Integer',
+                            value: response.data.data[item]
+                        })
+                    }
+                    _this.dialogVisible=true;
+                })
+            },
+            getTraceHeader(){
+                let _this = this;
+                this.isLoading=true;
+                this.$axios({
+                    method:'get',
+                    url:'/segy/trace/'+this.$data.chosenFileId+'/header',
+                    params:{
+                        subProjectId: this.$Global.projectDetails.subProjectList[0].id
+                    },
+                    headers:{
+                        'Content-Type':'application/json'
+                    }
+                }).then((response)=>{
+                    window.console.log(response.data.data);
+                    _this.isLoading=false;
+                    for(let item in response.data.data){
+                        _this.tableData.push({
+                            description: item,
+                            format: 'Integer',
+                            value: response.data.data[item]
+                        })
+                    }
+                })
+            },
             chooseSegy(index){
                 this.isLoading = true;
                 window.console.log(index);
@@ -679,6 +737,9 @@
                     }
                 }).then((response)=>{
                     window.console.log(response);
+                    _this.isLoading = false;
+                }).catch((error)=>{
+                    window.console.log(error);
                     _this.isLoading = false;
                 })
 
@@ -727,6 +788,7 @@
             clickPreview(){
                 window.console.log(this.$Global.projectDetails);
                 let _this = this;
+                this.isLoading = true;
                 this.$axios({
                     method:'get',
                     url:'/segy/trace/field',
@@ -739,7 +801,11 @@
                     }
                 }).then((response)=>{
                     window.console.log(response.data);
-                    
+                    _this.isLoading = false;
+                    _this.checkEcharts();
+                }).catch((error)=>{
+                    window.console.log(error);
+                    _this.isLoading = false;
                     _this.checkEcharts();
                 })
             },
@@ -749,7 +815,8 @@
                     method:'get',
                     url:'/segy/trace/'+val,
                     params:{
-                        subProjectId: this.$Global.projectDetails.subProjectList[0].id
+                        subProjectId: this.$Global.projectDetails.subProjectList[0].id,
+
                     },
                     headers:{
                         'Content-Type':'application/json'
@@ -760,16 +827,23 @@
                 })
             },
             finishFunc(){
+                // let _this = this;
+
+                // this.$message({
+                //     type:'info',
+                //     message:'Import Segy Data...'
+                // })
+                // this.$data.isLoading=true;
+                // let _this = this;
+                // setTimeout(function(){
+                //     _this.$data.isLoading=false;
+                //     _this.$router.push('/');
+                // },2000);
+                this.$router.push('/');
                 this.$message({
-                    type:'info',
-                    message:'Import Segy Data...'
-                })
-                this.$data.isLoading=true;
-                let _this = this;
-                setTimeout(function(){
-                    _this.$data.isLoading=false;
-                    _this.$router.push('/');
-                },2000);
+                    type:'success',
+                    message:'import success'
+                });
             },
             getTraceField(){
                 // let _this = this;
@@ -786,6 +860,8 @@
                     window.console.log(response.data);
                     
                 })
+
+                this.getTraceHeader();
             }
 
 

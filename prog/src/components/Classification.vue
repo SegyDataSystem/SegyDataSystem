@@ -648,6 +648,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateSVM(){
@@ -669,6 +673,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateCART(){
@@ -690,6 +698,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateRandomForest(){
@@ -711,6 +723,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateCoTrade(){
@@ -732,6 +748,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateUDEED(){
@@ -753,6 +773,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             }
         }

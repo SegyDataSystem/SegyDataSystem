@@ -502,6 +502,7 @@
                 this.chosedFileList = temp;
                 window.console.log(this.chosedFileList);
 
+
             },
             startCalculatePCA(){
                 let _this = this;
@@ -522,6 +523,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateICA(){
@@ -543,6 +548,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateLPP(){
@@ -564,6 +573,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateNPE(){
@@ -585,6 +598,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateLLE(){
@@ -605,7 +622,12 @@
                     }
                 }).then((response)=>{
                     window.console.log(response);
+
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             }
         }

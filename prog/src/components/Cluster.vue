@@ -413,9 +413,7 @@
 
                     <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
                     <div style="margin-top:30px;">
-                        <el-button  @click="()=>{
-                            this.$router.push('/')
-                        }">Run</el-button>
+                        <el-button  @click="startCalculateGTM">Run</el-button>
                         <el-button  @click="()=>{this.$router.push('/')}">Cancel</el-button>
                     </div>
                     <div style="width:100%;height:50px;"></div>
@@ -875,6 +873,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateFuzzy(){
@@ -896,6 +898,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateEnsemble(){
@@ -917,6 +923,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateAP(){
@@ -938,6 +948,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateGTM(){
@@ -959,6 +973,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateSOM(){
@@ -980,6 +998,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateSpectral(){
@@ -1001,6 +1023,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateDBSCAN(){
@@ -1022,6 +1048,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             startCalculateK(){
@@ -1043,6 +1073,10 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$router.push('/');
+                    _this.$message({
+                        type:'success',
+                        message:'run successful'
+                    });
                 })
             },
             changeChoose(current, direction, keys){
