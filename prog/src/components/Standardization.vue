@@ -10,8 +10,12 @@
                 <el-row style="width:100%">
                     <el-col style="width:50%;text-align:left">
                         <div >
-                            <el-select size="small" v-model="horizonSelect" style="width:80%" disabled>
-                                <el-option value="0" label="Horizon"></el-option>
+                            <el-select size="small" v-model="horizonSelect" style="width:80%" @change="changeSelection">
+                                <el-option value="Horizon" label="Horizon"></el-option>
+                                <el-option value="Interval" label="Interval"></el-option>
+                                <el-option value="Seismic" label="Seismic 3D"></el-option>
+                                <el-option value="Wells" label="Wells"></el-option>
+                                <el-option value="Fault" label="Fault"></el-option>
                             </el-select>
                         </div>
                         <div style="margin-top:20px;width:80%">
@@ -30,7 +34,7 @@
 <!--                                    </el-table-column>-->
 <!--                                </el-table>-->
                             <select multiple="multiple" style="width: 80%;height:100px;" v-model="selectType">
-                                <option v-for="(item, index) in downloadFileList" :value="index" :label="item.realName" :key="index">Dip</option>
+                                <option v-for="(item,index) in selectOptionsAttribute" :key="index" :value="item.id" :label="item.realName"></option>
                             </select>
 
                         </div>
@@ -38,8 +42,8 @@
                     </el-col>
                     <el-col style="width:49%;margin-left:1%;text-align:left">
                         <div >
-                            <el-select size="small" v-model="horizonSelect1" style="width:80%" disabled>
-                                <el-option value="0" label="Curvedness"></el-option>
+                            <el-select size="small" v-model="horizonSelect1" style="width:80%" >
+                                <el-option v-for="(item, index) in selectOptions" :value="index" :label="item" :key="index">Dip</el-option>
                             </el-select>
                         </div>
                         <div style="margin-top:20px;width:80%">
@@ -53,7 +57,8 @@
             </div>
 
             <div style="margin-top:30px;">
-                    <el-button type="primary" @click="()=>{this.$router.push({path:'/Result',query:{file: this.downloadFileList[selectType],radio: this.radio}})}">Start</el-button>
+<!--                    <el-button type="primary" @click="()=>{this.$router.push({path:'/Result',query:{file: this.downloadFileList[selectType],radio: this.radio}})}">Start</el-button>-->
+                    <el-button type="primary" @click="startStand">Start</el-button>
                     <el-button type="primary" @click="()=>{this.$router.push('/')}">Cancel</el-button>
             </div>
         </div>
@@ -71,8 +76,8 @@
                 choosedData:'dn_rms_poststackamplitude',
                 step:1,
                 radio:'MAX_MIN',
-                horizonSelect:'0',
-                horizonSelect1:'0',
+                horizonSelect:'请选择',
+                horizonSelect1:'',
                 selectType:'',
                 tableData:[
                     {
@@ -83,7 +88,9 @@
                     },
                     
                 ],
-                downloadFileList:[]
+                downloadFileList:[],
+                selectOptions:[],
+                selectOptionsAttribute:[]
             }
         },
         mounted(){
@@ -100,6 +107,57 @@
         
         },
         methods:{
+            startStand(){
+              this.$message({
+                  type:'success',
+                  message:'run successful'
+              });
+              this.$router.push('/');
+            },
+            changeSelection(){
+                window.console.log('dwjdiwd');
+                // let _this = this;
+                let tempOptions = [];
+                let tempOptionsAttribute = [];
+                if(this.$data.horizonSelect==='Horizon'){
+                    tempOptions = this.$Global.projectDetails.subProjectList[1].file.realName;
+                    if(this.$Global.projectDetails.subProjectList[1].dataMiningList[5].fileList) {
+                        for (let index = 0; index < this.$Global.projectDetails.subProjectList[1].dataMiningList[5].fileList.length; index++) {
+                            tempOptionsAttribute.push(this.$Global.projectDetails.subProjectList[1].dataMiningList[5].fileList[index]);
+                        }
+                    }
+                }else if(this.$data.horizonSelect === 'Seismic'){
+                    tempOptions = this.$Global.projectDetails.subProjectList[0].file.realName;
+                    if(this.$Global.projectDetails.subProjectList[0].dataMiningList[5].fileList) {
+                        for (let index = 0; index < this.$Global.projectDetails.subProjectList[0].dataMiningList[5].fileList.length; index++) {
+                            tempOptionsAttribute.push(this.$Global.projectDetails.subProjectList[0].dataMiningList[5].fileList[index]);
+                        }
+                    }
+                }else if(this.$data.horizonSelect === 'Interval'){
+                    tempOptions = this.$Global.projectDetails.subProjectList[2].file.realName;
+                    if(this.$Global.projectDetails.subProjectList[2].dataMiningList[5].fileList) {
+                        for (let index = 0; index < this.$Global.projectDetails.subProjectList[2].dataMiningList[5].fileList.length; index++) {
+                            tempOptionsAttribute.push(this.$Global.projectDetails.subProjectList[2].dataMiningList[5].fileList[index]);
+                        }
+                    }
+                }else if(this.$data.horizonSelect === 'Wells'){
+                    tempOptions = this.$Global.projectDetails.subProjectList[3].file.realName;
+                    if(this.$Global.projectDetails.subProjectList[3].dataMiningList[5].fileList) {
+                        for (let index = 0; index < this.$Global.projectDetails.subProjectList[3].dataMiningList[5].fileList.length; index++) {
+                            tempOptionsAttribute.push(this.$Global.projectDetails.subProjectList[3].dataMiningList[5].fileList[index]);
+                        }
+                    }
+                }else{
+                    tempOptions = this.$Global.projectDetails.subProjectList[4].file.realName;
+                    if(this.$Global.projectDetails.subProjectList[4].dataMiningList[5].fileList) {
+                        for (let index = 0; index < this.$Global.projectDetails.subProjectList[4].dataMiningList[5].fileList.length; index++) {
+                            tempOptionsAttribute.push(this.$Global.projectDetails.subProjectList[4].dataMiningList[5].fileList[index]);
+                        }
+                    }
+                }
+                this.horizonSelect1 = tempOptions;
+                this.selectOptionsAttribute = tempOptionsAttribute;
+            },
             startCalculate(){
                 // let _this = this;
                 this.$axios({

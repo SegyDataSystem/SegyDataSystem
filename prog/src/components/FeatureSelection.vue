@@ -23,9 +23,11 @@
                     </el-select>
                     <el-select v-model="select3" placeholder="select...">
                         <el-option value="0" label="Preprocess"></el-option>
+                        <el-option value="0" label=""></el-option>
                     </el-select>
                     <el-select v-model="select4" placeholder="select...">
                         <el-option value="0" label="SRC"></el-option>
+                        <el-option value="0" label="STD"></el-option>
                     </el-select>
                 </div>
                 <div class="form-item-body">

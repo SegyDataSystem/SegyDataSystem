@@ -1,6 +1,26 @@
 <template>
     <div class="projects-pad" >
       <div v-loading="v_loading">
+        <el-dialog :visible.sync="dialogVisibleImportAttribute"  title="please choose a file" style="margin-left:auto;margin-right:auto;">
+          <div>
+            <el-table :data="downloadFileList" v-show="!hasChosen">
+              <el-table-column
+                      prop="realName"
+                      label="file name"
+              >
+              </el-table-column>
+              <el-table-column>
+                <template slot-scope="scope">
+                  <el-button type="primary" size="small" @click="chooseSegy(scope.$index)">select</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+          <div style="margin-top:30px;">
+
+            <el-button type="primary" @click="()=>{this.$data.dialogVisible=false;}">Cancel</el-button>
+          </div>
+        </el-dialog>
       <el-dialog :visible.sync="dialogVisible"  title="please choose a file" style="width:50%;min-width:600px;margin-left:auto;margin-right:auto;">
         <div>
           <span>input </span>
@@ -84,8 +104,7 @@
         <el-tabs type="border-card" style="box-shadow:0 0 0 white" v-if="haveNewProject">
 
           <el-tab-pane label="Seismic">
-            <el-tree :data="data" :props="defaultProps" ref="tree"  show-checkbox></el-tree>
-
+            <el-tree :data="SeismicData" :props="defaultProps" ref="treeSeismic"  show-checkbox></el-tree>
             <div style="margin-top:50px;width: 98%;margin-right:auto;margin-left:auto;text-align:left">
               <el-button type="primary" size="small" @click="getCheckedNodes">Export Seismic Data</el-button>
             </div>
@@ -95,19 +114,21 @@
             <el-tree :data="data" :props="defaultProps"  show-checkbox ref="tree1"></el-tree>
             <div style="margin-top:50px;width: 98%;margin-right:auto;margin-left:auto;text-align:left">
               <el-button type="primary" size="small" @click="getCheckedNodes1">Export Horizon Data</el-button>
+<!--              <el-button type="primary" size="small" @click="getCheckedNodes1">Import Horizon Data</el-button>-->
+              <el-button type="primary" size="small" @click="dialogVisibleImportAttribute=true">Import Horizon Attribute</el-button>
             </div>
 
           </el-tab-pane>
           <el-tab-pane label="Interval">
-            <el-tree :data="data" :props="defaultProps"  show-checkbox></el-tree>
+            <el-tree :data="IntervalData" :props="defaultProps"  show-checkbox></el-tree>
           </el-tab-pane>
           <el-tab-pane label="Well">
-            <el-tree :data="data" :props="defaultProps"  show-checkbox></el-tree>
+            <el-tree :data="WellsData" :props="defaultProps"  show-checkbox></el-tree>
 
 
           </el-tab-pane>
           <el-tab-pane label="Fault">
-            <el-tree :data="data" :props="defaultProps"  show-checkbox></el-tree>
+            <el-tree :data="Fault" :props="defaultProps"  show-checkbox></el-tree>
           </el-tab-pane>
         </el-tabs>
         
@@ -145,9 +166,33 @@
       },
       v_loading: false,
       loading1: false,
+      dialogVisibleImportAttribute:false,
+      downloadFileList:[],
+      chosenFile:'',
+      chosedFileId:'',
+      SeismicData:[],
+      FaultData:[],
+      WellsData:[],
+      IntervalData:[]
     }
   },
+    watch:{
+      $route(fromPath, toPath){
+        let _this = this;
+        this.$axios({
+          method:'get',
+          url:'/project/'+this.$Global.projectDetails.id,
+        }).then((response)=>{
+          _this.$Global.projectDetails = response.data.data;
+          window.console.log('jjj');
+          _this.showTrees();
+        })
+      }
+
+    },
   mounted(){
+    this.getProject();
+    this.getDownloadFiles();
     window.console.log(this.$route);
     if(this.$route.query.a==='a'){
       window.console.log('ddd');
@@ -186,6 +231,242 @@
     }
   },
   methods:{
+    getDownloadFiles(){
+      let _this = this;
+      this.$axios({
+        method:'get',
+        url: this.$Global.server_config.url+'/downloadFile/fileList?userId='+this.$Global.server_config.userId,
+
+      }).then((response)=>{
+        _this.downloadFileList = response.data;
+      });
+    },
+    chooseSegy(index){
+      this.isLoading = true;
+      window.console.log(index);
+      this.$data.chosenFile = this.$data.downloadFileList[index].realName;
+      this.$data.chosenFileId = this.$data.downloadFileList[index].id;
+      this.$data.hasChosen = true;
+      let _this = this;
+      this.$axios({
+        method:'post',
+        url:this.$Global.server_config.url+'/updateFile/datamining/'+this.$Global.projectDetails.subProjectList[1].dataMiningList[5].id,
+        params:{
+          // subProjectId: this.$Global.projectDetails.subProjectList[1].id,
+          fileId: this.$data.chosenFileId
+        }
+      }).then((response)=>{
+        window.console.log(response);
+        _this.isLoading = false;
+        _this.dialogVisibleImportAttribute=false;
+        _this.getProject();
+      }).catch((error)=>{
+        window.console.log(error);
+        _this.isLoading = false;
+      })
+
+    },
+    getProject(){
+      if(this.$Global.projectDetails.id) {
+        let _this = this;
+        this.$axios({
+          method: 'get',
+          url: '/project/' + this.$Global.projectDetails.id,
+        }).then((response) => {
+          _this.$Global.projectDetails = response.data.data;
+          window.console.log('222');
+          _this.showTrees();
+        })
+      }
+    },
+    showTrees(){
+
+      /**
+       * Horizon
+       * */
+      if(this.$Global.projectDetails.subProjectList[1]) {
+        // window.console.log(this.$Global.);
+        let HorizonProject = this.$Global.projectDetails.subProjectList[1];
+        let tempHorizonTreeData=[{
+          label:'Horizon',
+        }];
+        if(HorizonProject.file){
+          tempHorizonTreeData[0].children=[{
+              label: HorizonProject.file.realName,
+              id: HorizonProject.file.id,
+              children:[{
+                label:'Attribute',
+                children:[]
+              }]
+          }];
+          for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
+            tempHorizonTreeData[0].children[0].children[0].children.push({
+              label: HorizonProject.dataMiningList[item].type,
+              children:[]
+            });
+            if(HorizonProject.dataMiningList[item].fileList){
+              let tempFileList = HorizonProject.dataMiningList[item].fileList;
+              for(let index = 0;index<tempFileList.length;index++){
+                tempHorizonTreeData[0].children[0].children[0].children[item].children.push({
+                    label: tempFileList[index].realName
+                })
+              }
+            }
+          }
+
+        }
+        this.$data.data = tempHorizonTreeData;
+      }
+
+      /**
+       * seismic
+       * */
+      if(this.$Global.projectDetails.subProjectList[0]){
+        let HorizonProject = this.$Global.projectDetails.subProjectList[0];
+        let tempHorizonTreeData=[{
+          label:'Seismic',
+        }];
+        if(HorizonProject.file){
+          tempHorizonTreeData[0].children=[{
+            label: HorizonProject.file.realName,
+            id: HorizonProject.file.id,
+            children:[{
+              label:'Attribute',
+              children:[]
+            }]
+          }];
+          for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
+            tempHorizonTreeData[0].children[0].children[0].children.push({
+              label: HorizonProject.dataMiningList[item].type,
+              children:[]
+            });
+            if(HorizonProject.dataMiningList[item].fileList){
+              let tempFileList = HorizonProject.dataMiningList[item].fileList;
+              for(let index = 0;index<tempFileList.length;index++){
+                tempHorizonTreeData[0].children[0].children[0].children[item].children.push({
+                  label: tempFileList[index].realName
+                })
+              }
+            }
+          }
+
+        }
+        this.$data.SeismicData = tempHorizonTreeData;
+
+      }
+
+      /**
+       * Interval
+       * */
+      if(this.$Global.projectDetails.subProjectList[2]){
+        let HorizonProject = this.$Global.projectDetails.subProjectList[2];
+        let tempHorizonTreeData=[{
+          label:'Interval',
+        }];
+        if(HorizonProject.file){
+          tempHorizonTreeData[2].children=[{
+            label: HorizonProject.file.realName,
+            id: HorizonProject.file.id,
+            children:[{
+              label:'Attribute',
+              children:[]
+            }]
+          }];
+          for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
+            tempHorizonTreeData[0].children[0].children[0].children.push({
+              label: HorizonProject.dataMiningList[item].type,
+              children:[]
+            });
+            if(HorizonProject.dataMiningList[item].fileList){
+              let tempFileList = HorizonProject.dataMiningList[item].fileList;
+              for(let index = 0;index<tempFileList.length;index++){
+                tempHorizonTreeData[0].children[0].children[0].children[item].children.push({
+                  label: tempFileList[index].realName
+                })
+              }
+            }
+          }
+
+        }
+        this.$data.IntervalData = tempHorizonTreeData;
+
+      }
+      /**
+       * Wells
+       * */
+      if(this.$Global.projectDetails.subProjectList[3]){
+        let HorizonProject = this.$Global.projectDetails.subProjectList[3];
+        let tempHorizonTreeData=[{
+          label:'Wells',
+        }];
+        if(HorizonProject.file){
+          tempHorizonTreeData[0].children=[{
+            label: HorizonProject.file.realName,
+            id: HorizonProject.file.id,
+            children:[{
+              label:'Attribute',
+              children:[]
+            }]
+          }];
+          for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
+            tempHorizonTreeData[0].children[0].children[0].children.push({
+              label: HorizonProject.dataMiningList[item].type,
+              children:[]
+            });
+            if(HorizonProject.dataMiningList[item].fileList){
+              let tempFileList = HorizonProject.dataMiningList[item].fileList;
+              for(let index = 0;index<tempFileList.length;index++){
+                tempHorizonTreeData[0].children[0].children[0].children[item].children.push({
+                  label: tempFileList[index].realName
+                })
+              }
+            }
+          }
+
+        }
+        this.$data.WellsData = tempHorizonTreeData;
+
+      }
+
+      /**
+       * Fault
+       * */
+      if(this.$Global.projectDetails.subProjectList[4]){
+        let HorizonProject = this.$Global.projectDetails.subProjectList[4];
+        let tempHorizonTreeData=[{
+          label:'Fault',
+        }];
+        if(HorizonProject.file){
+          tempHorizonTreeData[0].children=[{
+            label: HorizonProject.file.realName,
+            id: HorizonProject.file.id,
+            children:[{
+              label:'Attribute',
+              children:[]
+            }]
+          }];
+          for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
+            tempHorizonTreeData[0].children[0].children[0].children.push({
+              label: HorizonProject.dataMiningList[item].type,
+              children:[]
+            });
+            if(HorizonProject.dataMiningList[item].fileList){
+              let tempFileList = HorizonProject.dataMiningList[item].fileList;
+              for(let index = 0;index<tempFileList.length;index++){
+                tempHorizonTreeData[0].children[0].children[0].children[item].children.push({
+                  label: tempFileList[index].realName
+                })
+              }
+            }
+          }
+
+        }
+        this.$data.FaultData = tempHorizonTreeData;
+
+      }
+
+
+    },
     newProject(){
       this.v_loading=true;
 
@@ -202,7 +483,9 @@
         _this.$Global.projectDetails = response.data.data;
         _this.$Global.hasProject=true;
         _this.haveNewProject = true;
+
         _this.v_loading=false;
+        _this.showTrees();
         _this.$message({
           type:'success',
           message:'project created successfully!'
