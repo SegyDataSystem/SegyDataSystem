@@ -74,8 +74,25 @@
                     <span class="form-item-title-span">Trace Preview</span>
                 </div>
                 <div class="form-item-body" style="margin-top:5px;">
-                    <div id="myChart" :style="{width: '300px', height: '300px'}"></div>
+                    <div id="myChart" :style="{width: '600px', height: '400px'}"></div>
                 </div>
+
+                 <div class="form-item-title no-first">
+                    <span class="form-item-title-span">Slice Preview</span>
+                </div>
+                <div class="form-item-body" style="margin-top:5px;">
+                    <div>
+                        <span>Slice Type: </span>
+                        <el-select size="small" v-model="chooseDraw" @change="changeDraw">
+                            <el-option value="xline">xline</el-option>
+                            <el-option value="iline">iline</el-option>
+                            <el-option value="depth">depth</el-option>
+                        </el-select>
+                    </div>
+                    <div id="myChartHot" :style="{width: '500px', height: '400px'}"></div>
+                </div>
+
+                
 
                 <div class="form-item-title no-first">
                     <span class="form-item-title-span">Display</span>
@@ -589,6 +606,7 @@
         name: "NewProject",
         data(){
             return{
+                chooseDraw:'',
                 dialogVisible: false,
                 chosenFile:'',
                 hasChosen: false,
@@ -651,6 +669,15 @@
                 s2in8:'4',
                 end:[],
                 tableDataDialog:[],
+                xdata:[],
+                ydata:[],
+                displayData:[],
+                xlimit:300,
+                ylimit:300,
+                diagramData:[],
+                signData:[],
+                xlabel:'',
+                ylabel:''
             }
         },
         mounted() {
@@ -699,6 +726,9 @@
             },
             getTraceHeader(){
                 let _this = this;
+                let myChartHot = this.$echarts.init(document.getElementById('myChartHot'));
+                myChartHot.dispose();
+                
                 this.isLoading=true;
                 this.$axios({
                     method:'get',
@@ -738,23 +768,180 @@
                 }).then((response)=>{
                     window.console.log(response);
                     _this.isLoading = false;
+                    _this.getSignData();
                 }).catch((error)=>{
                     window.console.log(error);
                     _this.isLoading = false;
                 })
 
             },
+            getSignData(){
+                let _this = this;
+                this.$axios({
+                    method:'get',
+                    url:'/project/workzone/'+this.$Global.projectDetails.workZone.id,
+                }).then((response)=>{
+                    _this.signData = response.data.data;  
+                });
+            },
+            changeDraw(){
+                this.isLoading = true;
+                let change = this.$data.chooseDraw;
+                let _this = this;
+                if(change==='depth'){
+                this.$axios({
+                    method:'get',
+                    url:'/segy/'+change+'/1',
+                    params:{
+                        subProjectId: this.$Global.projectDetails.subProjectList[0].id
+                    }
+                }).then((response)=>{
+                    _this.$data.displayData = response.data.data;
+                    window.console.log(response.data);
+                    _this.checkSliceEcharts();
+                    //  window.console.log(response);
+                    _this.isLoading = false;
+                }).catch((err)=>{
+                    _this.isLoading = false;
+                    window.console.log(err);
+                })
+                }else{
+                    this.$axios({
+                        method:'get',
+                        url:'/segy/'+change+'/500',
+                        params:{
+                            subProjectId: this.$Global.projectDetails.subProjectList[0].id
+                        }
+                    }).then((response)=>{
+                        _this.$data.displayData = response.data.data;
+                        window.console.log(response.data);
+                        _this.checkSliceEcharts();
+                        //  window.console.log(response);
+                        _this.isLoading = false;
+                    }).catch((err)=>{
+                        _this.isLoading = false;
+                        window.console.log(err);
+                    })
+
+                }
+
+            },
+            checkSliceEcharts(){
+                let myChartHot = this.$echarts.init(document.getElementById('myChartHot'));
+                let data = [];
+                let totalNum = this.$data.displayData.length;
+                let xlimit = totalNum;
+                let ylimit = this.$data.displayData[0].length;
+
+                window.console.log(this.signData);
+
+                if(this.chooseDraw==='xline'){
+                    window.console.log(1);
+                    for(let i = 0; i < xlimit; i=i+this.signData.inlineStep){
+                        this.$data.xdata.push(i+parseInt(this.signData.inlineFrom));
+                        
+                    
+                    }
+
+                    for(let i = 0; i < ylimit; i=i+this.signData.timeStep){
+                        this.$data.ydata.push(i+parseInt(this.signData.timeFrom));
+                        
+                    }
+                    this.xlabel='inline';
+                    this.ylabel='time';
+                }else if(this.changeDraw==='iline'){
+                    for(let i = 0; i < xlimit; i=i+this.signData.xlineStep){
+                    this.$data.xdata.push(i+parseInt(this.signData.xlineFrom));
+                    // this.$data.xdata.push(i+470);
+                    
+                    }
+
+                    for(let i = 0; i < ylimit; i=i+this.signData.timeStep){
+                        this.$data.ydata.push(i+parseInt(this.signData.timeFrom));
+                        // this.$data.ydata.push(i+480);
+                        
+                    }
+                    this.xlabel='xline';
+                    this.ylabel='time';
+                }else{
+                    for(let i = 0; i < xlimit; i++){
+                        this.$data.xdata.push(i+parseInt(this.signData.inlineFrom));
+                        // this.$data.xdata.push(i+470);
+                    
+                    }
+
+                    for(let i = 0; i < ylimit; i++){
+                        this.$data.ydata.push(i+parseInt(this.signData.xlineFrom));
+                        // this.$data.ydata.push(i+480);
+                        
+                    }
+                    this.xlabel='inline';
+                    this.ylabel='xline';
+
+                }
+
+                
+
+                // let index = 0;
+                for(let x = 0; x < xlimit; x++){
+                    for(let y = 0; y < ylimit; y++){
+                        data.push([x, y, (this.$data.displayData[x][y]*1.0)/10000000]);
+                    }
+                }
+
+
+                let option = {
+                    tooltip: {},
+                    xAxis: {
+                        type: 'category',
+                        data: this.$data.xdata,
+                        label: this.xlabel
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: this.$data.ydata,
+                        label: this.ylabel
+                    },
+                    visualMap: {
+                        min: -150,
+                        max: 150,
+                        calculable: true,
+                        realtime: false,
+                        inRange: {
+                            color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
+                        }
+                    },
+                    series: [{
+                        name: 'Gaussian',
+                        type: 'heatmap',
+                        data: data,
+                        emphasis: {
+                            itemStyle: {
+                                borderColor: '#333',
+                                borderWidth: 1
+                            }
+                        },
+                        progressive: 1000,
+                        animation: false
+                    }]
+                };
+                myChartHot.setOption(option);
+            },
             checkEcharts(){
                 let myChart = this.$echarts.init(document.getElementById('myChart'));
             // 绘制图表
             let k = [];
-            
-            for(let index = 0; index < 461; index++){
+            if(this.diagramData.length===0){
+                for(let index = 0; index < 461; index++){
                 k.push(index);
-                this.$data.end.push(-1);
+                this.$data.diagramData.push(-1);
                 
             }
+            }
+            
+            
             myChart.setOption({
+                
                 xAxis: {
                     type: 'category',
                     data: ['50', '100', '150', '200', '250', '300', '350']
@@ -763,7 +950,7 @@
                     type: 'value'
                 },
                 series: [{
-                    data: this.$data.end,
+                    data: this.$data.diagramData,
                     type: 'line',
                     smooth: true
                 }]
@@ -813,7 +1000,7 @@
                 let _this = this;
                 this.$axios({
                     method:'get',
-                    url:'/segy/trace/'+val,
+                    url:'/segy/trace/'+val+'/data',
                     params:{
                         subProjectId: this.$Global.projectDetails.subProjectList[0].id,
 
@@ -823,7 +1010,9 @@
                     }
                 }).then((response)=>{
                     window.console.log(response.data);
+                    _this.diagramData = response.data.data;
                     _this.checkEcharts();
+
                 })
             },
             finishFunc(){

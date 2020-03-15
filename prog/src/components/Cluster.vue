@@ -1,5 +1,5 @@
 <template>
-    <div id="NewProject">
+    <div id="NewProject" v-loading="loading1"> 
         <div class="import-title-panel">
             <span v-if="step<=2" class="import-title">
                 Cluster Step {{step}} of 2
@@ -180,11 +180,11 @@
                     <div class="form-item-body">
                         <div>
                             <span style="display:inline-block;width:120px;">Cluster Number:</span>
-                            <input v-model="K_MEANS[0].value" style="width:100px;" />
+                            <input v-model="K_MEANS.clusterNum" style="width:100px;" />
                         </div>
                         <div style="margin-top:15px;">
                             <span style="display:inline-block;width:120px;">Iterations:</span>
-                            <input v-model="K_MEANS[1].value" style="width:100px;" />
+                            <input v-model="K_MEANS.iteration" style="width:100px;" />
                         </div>
                     </div>
 
@@ -621,6 +621,7 @@
                 return data;
             };
             return{
+                loading1: false,
                 chooseFloat:'IBM',
                 checkInvalid:true,
                 select1:'0',
@@ -821,16 +822,12 @@
                         value:''
                     }
                 ],
-                K_MEANS:[
-                    {
-                        name:'Cluster Num',
-                        value:''
-                    },
-                    {
-                        name: 'Iterations',
-                        value: ''
-                    }
-                ]
+                K_MEANS:{
+                    iteration:'',
+                    clusterNum:''
+                },
+                    
+                
 
             }
         },
@@ -1060,14 +1057,15 @@
                 for(let index = 0; index < this.chosedFileList.length; index++){
                     files.push(this.chosedFileList[index].id);
                 }
+                this.loading1 = true;
                 this.$axios({
                     method:'post',
                     url:'/datamining',
                     data:{
                         dataMiningMethod: this.select5,
-                        workZone: this.workZone,
+                        // workZone: this.workZone,
                         subProjectId: this.$Global.projectDetails.subProjectList[1].id,
-                        fileId:files,
+                        fileIdList:files,
                         parameters: this.K_MEANS
                     }
                 }).then((response)=>{

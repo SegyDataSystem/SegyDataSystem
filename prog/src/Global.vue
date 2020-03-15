@@ -5,11 +5,13 @@
 
     };
     let hasProject = false;
+    let mergeLabels = [];
     let projectDetails = {};
     export default {
         server_config,
         hasProject,
-        projectDetails
+        projectDetails,
+        mergeLabels,
     }
 </script>
 

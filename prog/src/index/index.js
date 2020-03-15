@@ -17,6 +17,11 @@ import Classification from '../components/Classification';
 import LoadColormap from '../components/LoadColormap';
 import DatavalueDistribute from '../components/DatavalueDistribute';
 import FileManage from '../components/FileManage/FileManage';
+import IntervalData from '../components/IntervalData';
+import AutoSelectLabel from '../components/AutoSelectLabel';
+import ClusterImage from '../components/ClusterImage';
+import LabelMerger from '../components/LabelMerger';
+
 Vue.use(Router);
 
 export default new Router({
@@ -40,7 +45,24 @@ export default new Router({
             {
                 path: '/FileManage',
                 component: FileManage
+            },
+            {
+                path: '/IntervalData',
+                component: IntervalData
+            },
+            {
+                path: '/AutoSelectLabel',
+                component: AutoSelectLabel
+            },
+            {
+                path: '/ClusterImage',
+                component: ClusterImage
+            },
+            {
+                path: '/LabelMerger',
+                component: LabelMerger
             }
-        ]
+        ],
+        
     }
 )

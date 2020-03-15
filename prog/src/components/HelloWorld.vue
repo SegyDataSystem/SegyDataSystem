@@ -57,6 +57,7 @@
             <el-menu-item index="NewProject" >Import Segy Data</el-menu-item>
             <el-menu-item index="HorizonData">Import Horizon Data</el-menu-item>
             <el-menu-item index="WellData">Import Well Data</el-menu-item>
+            <el-menu-item index="IntervalData">Import Interval Data</el-menu-item>
             <el-menu-item index="CalculateAttributes">Calculate Attributes</el-menu-item>
 
           </el-submenu>
@@ -116,11 +117,21 @@
               <el-button type="primary" size="small" @click="getCheckedNodes1">Export Horizon Data</el-button>
 <!--              <el-button type="primary" size="small" @click="getCheckedNodes1">Import Horizon Data</el-button>-->
               <el-button type="primary" size="small" @click="dialogVisibleImportAttribute=true">Import Horizon Attribute</el-button>
+              <el-button type="primary" size="small" @click="toScatterProcess">Scatter Process</el-button>
+              <el-button type="primary" size="small" @click="toImageDenosing">Image Denoising</el-button>
+              <el-button type="primary" size="small" @click="toAutoSelectLabel">Auto Select Label</el-button>
+              <el-button type="primary" size="small" @click="toClusterImage">See Cluster Image</el-button>
             </div>
 
           </el-tab-pane>
           <el-tab-pane label="Interval">
             <el-tree :data="IntervalData" :props="defaultProps"  show-checkbox></el-tree>
+
+            <div style="margin-top:50px;width: 98%;margin-right:auto;margin-left:auto;text-align:left">
+              
+<!--              <el-button type="primary" size="small" @click="getCheckedNodes1">Import Horizon Data</el-button>-->
+              <el-button type="primary" size="small" @click="dialogVisibleImportAttribute=true">Import Horizon Attribute</el-button>
+            </div>
           </el-tab-pane>
           <el-tab-pane label="Well">
             <el-tree :data="WellsData" :props="defaultProps"  show-checkbox></el-tree>
@@ -516,6 +527,86 @@
         })
       }else{
         this.$router.push('/ExportHorizonData')
+      }
+    },
+    toAutoSelectLabel(){
+      /* eslint-disable*/
+      console.log(this.$refs.tree1.getCheckedNodes());
+      let tree = this.$refs.tree1.getCheckedNodes();
+      if(tree.length===0){
+        this.$message({
+          message:'No node is selected!',
+          type:'error'
+        })
+      }else{
+        this.$router.push('/AutoSelectLabel')
+      }
+    },
+    toScatterProcess(){
+      /* eslint-disable*/
+      let tree = this.$refs.tree1.getCheckedNodes();
+      if(tree.length===0){
+        this.$message({
+          message:'No node is selected!',
+          type:'error'
+        })
+      }else{
+        this.$confirm('Do Scatter Process?', 'Info', {
+          confirmButtonText: 'yes',
+          cancelButtonText: 'no',
+          type: 'warning'
+        }).then(() => {
+          this.$message({
+            type: 'success',
+            message: 'Scatter Process Successful!'
+          });
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: 'Scatter Process Cancel!'
+          });          
+        });
+      }
+    },
+    toImageDenosing(){
+      /* eslint-disable*/
+      let tree = this.$refs.tree1.getCheckedNodes();
+      if(tree.length===0){
+        this.$message({
+          message:'No node is selected!',
+          type:'error'
+        })
+      }else{
+        this.$confirm('Do Image Denosing?', 'Info', {
+          confirmButtonText: 'yes',
+          cancelButtonText: 'no',
+          type: 'warning'
+        }).then(() => {
+          this.$message({
+            type: 'success',
+            message: 'Image Denosing Successful!'
+          });
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: 'Image Denosing Cancel!'
+          });          
+        });
+      }
+    },
+    toClusterImage(){
+      
+      let tree = this.$refs.tree1.getCheckedNodes();
+      
+      if(tree.length===0){
+        this.$message({
+          message:'No node is selected!',
+          type:'error'
+        })
+      }else{
+        this.$router.push({path:'/ClusterImage',query:{
+          imagePath:this.$Global.projectDetails.subProjectList[1].dataMiningList[2].fileList[0].path,
+          id: this.$Global.projectDetails.subProjectList[1].dataMiningList[2].fileList[0].id}});
       }
     }
   }
