@@ -1,7 +1,31 @@
 <template>
     <div class="projects-pad" >
       <div v-loading="v_loading">
-        <el-dialog :visible.sync="dialogVisibleImportAttribute"  title="please choose a file" style="margin-left:auto;margin-right:auto;">
+
+        <el-dialog :visible.sync="dialogVisibleExisting"  title="please choose a project" style="margin-left:auto;margin-right:auto;">
+          <div>
+            <el-table style="width:80%;margin-left:auto;margin-right:auto;" :data="projectList">
+              <el-table-column
+                      prop="name"
+                      label="project name"
+              >
+              </el-table-column>
+              <el-table-column
+                label="operation"
+              >
+                <template slot-scope="scope">
+                  <el-button type="primary" size="small" @click="chooseProject(scope.$index)">select</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+          <div style="margin-top:30px;">
+
+            <el-button type="primary" @click="()=>{this.$data.dialogVisible=false;}">Cancel</el-button>
+          </div>
+        </el-dialog>
+
+        <el-dialog :visible.sync="dialogVisibleImportAttribute"  title="create a new project" style="margin-left:auto;margin-right:auto;">
           <div>
             <el-table :data="downloadFileList" v-show="!hasChosen">
               <el-table-column
@@ -48,9 +72,10 @@
       </el-dialog>
       <div>
         <el-menu  class="el-menu-demo" mode="horizontal"  :router="true">
-          <el-submenu index="0">
+          <el-submenu index="0" :router="false">
             <template slot="title">File</template>
-            <el-menu-item @click="dialogVisibleNew=true" >New Project</el-menu-item>
+            <el-menu-item  @click="dialogVisibleNew=true" >New Project</el-menu-item>
+            <el-menu-item  @click="getExistingProjects" >Open Existing Project</el-menu-item>
           </el-submenu>
           <el-submenu index="2">
             <template slot="title">Import</template>
@@ -101,13 +126,14 @@
 
       </div>
       <div style="margin-top:20px;width: 80%;" >
-        <span v-if="!haveNewProject">No Project. Please Create a New Project</span>
+        <span v-if="!haveNewProject">No Project. Please Create a New Project or Select a Existing Project.</span>
         <el-tabs type="border-card" style="box-shadow:0 0 0 white" v-if="haveNewProject">
 
           <el-tab-pane label="Seismic">
             <el-tree :data="SeismicData" :props="defaultProps" ref="treeSeismic"  show-checkbox></el-tree>
             <div style="margin-top:50px;width: 98%;margin-right:auto;margin-left:auto;text-align:left">
               <el-button type="primary" size="small" @click="getCheckedNodes">Export Seismic Data</el-button>
+              <el-button type="primary" size="small" @click="()=>{this.$router.push('/SegyDataImage')}">Seismic Data Image</el-button>
             </div>
           </el-tab-pane>
 
@@ -156,6 +182,8 @@
   name: 'HelloWorld',
   data(){
     return{
+      projectList:[],
+      dialogVisibleExisting: false,
       data: [ {
           label: 'SeisMiningMyProject',
           children: [{
@@ -242,6 +270,29 @@
     }
   },
   methods:{
+    chooseProject(index){
+      let _this = this;
+      this.$Global.projectDetails.id = this.$data.projectList[index].id;
+      window.console.log(this.$Global.projectDetails);
+      this.getProject();
+      this.dialogVisibleExisting = false;
+      this.haveNewProject = true;
+    },
+    getExistingProjects(){
+
+      let use = new FormData();
+      use.append('userId','10000');
+      let _this = this;
+      this.$axios({
+        method: 'get',
+        url: 'http://47.103.212.224:8080/project?userId=10000',
+      }).then((response)=>{
+        window.console.log(response.data);
+        _this.$data.projectList = response.data.data;
+        _this.$data.dialogVisibleExisting = true;
+      })
+
+    },
     getDownloadFiles(){
       let _this = this;
       this.$axios({
@@ -280,6 +331,7 @@
     getProject(){
       if(this.$Global.projectDetails.id) {
         let _this = this;
+        _this.haveNewProject = true;
         this.$axios({
           method: 'get',
           url: '/project/' + this.$Global.projectDetails.id,
@@ -291,6 +343,7 @@
       }
     },
     showTrees(){
+      window.console.log('jdiwjdi');
 
       /**
        * Horizon
@@ -605,7 +658,6 @@
         })
       }else{
         this.$router.push({path:'/ClusterImage',query:{
-          imagePath:this.$Global.projectDetails.subProjectList[1].dataMiningList[2].fileList[0].path,
           id: this.$Global.projectDetails.subProjectList[1].dataMiningList[2].fileList[0].id}});
       }
     }

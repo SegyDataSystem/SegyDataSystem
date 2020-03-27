@@ -781,7 +781,8 @@
                     method:'get',
                     url:'/project/workzone/'+this.$Global.projectDetails.workZone.id,
                 }).then((response)=>{
-                    _this.signData = response.data.data;  
+                    _this.signData = response.data.data; 
+                    window.console.log(response.data.data); 
                 });
             },
             changeDraw(){
@@ -837,55 +838,52 @@
 
                 if(this.chooseDraw==='xline'){
                     window.console.log(1);
-                    for(let i = 0; i < xlimit; i=i+this.signData.inlineStep){
-                        this.$data.xdata.push(i+parseInt(this.signData.inlineFrom));
-                        
-                    
+                    for(let i = 0; i < xlimit/2; i=i+this.signData.inlineStep){
+                        this.$data.xdata.push(i*2+parseInt(this.signData.inlineFrom));
                     }
 
-                    for(let i = 0; i < ylimit; i=i+this.signData.timeStep){
-                        this.$data.ydata.push(i+parseInt(this.signData.timeFrom));
+                    for(let i = 0; i < ylimit/2; i=i+this.signData.timeStep){
+                        this.$data.ydata.push(i*2+parseInt(this.signData.timeFrom));
                         
                     }
                     this.xlabel='inline';
                     this.ylabel='time';
-                }else if(this.changeDraw==='iline'){
-                    for(let i = 0; i < xlimit; i=i+this.signData.xlineStep){
-                    this.$data.xdata.push(i+parseInt(this.signData.xlineFrom));
+                }else if(this.chooseDraw==='iline'){
+                    for(let i = 0; i < xlimit/2; i=i+this.signData.xlineStep){
+                    this.$data.xdata.push(i*2+parseInt(this.signData.xlineFrom));
                     // this.$data.xdata.push(i+470);
                     
                     }
 
-                    for(let i = 0; i < ylimit; i=i+this.signData.timeStep){
-                        this.$data.ydata.push(i+parseInt(this.signData.timeFrom));
+                    for(let i = 0; i < ylimit/2; i=i+this.signData.timeStep){
+                        this.$data.ydata.push(i*2+parseInt(this.signData.timeFrom));
                         // this.$data.ydata.push(i+480);
                         
                     }
                     this.xlabel='xline';
                     this.ylabel='time';
                 }else{
-                    for(let i = 0; i < xlimit; i++){
-                        this.$data.xdata.push(i+parseInt(this.signData.inlineFrom));
+                    for(let i = 0; i < xlimit/2; i++){
+                        this.$data.xdata.push(i*2+parseInt(this.signData.inlineFrom));
                         // this.$data.xdata.push(i+470);
-                    
                     }
 
-                    for(let i = 0; i < ylimit; i++){
-                        this.$data.ydata.push(i+parseInt(this.signData.xlineFrom));
+                    for(let i = 0; i < ylimit/2; i++){
+                        this.$data.ydata.push(i*2+parseInt(this.signData.xlineFrom));
                         // this.$data.ydata.push(i+480);
-                        
                     }
                     this.xlabel='inline';
                     this.ylabel='xline';
-
                 }
+
+                window.console.log(this.$data.xdata);
 
                 
 
                 // let index = 0;
-                for(let x = 0; x < xlimit; x++){
-                    for(let y = 0; y < ylimit; y++){
-                        data.push([x, y, (this.$data.displayData[x][y]*1.0)/10000000]);
+                for(let x = 0; x < xlimit/2; x++){
+                    for(let y = 0; y < ylimit/2; y++){
+                        data.push([x, y, (this.$data.displayData[x*2][y*2]*1.0)/10000000]);
                     }
                 }
 

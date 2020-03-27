@@ -6,7 +6,7 @@
     };
     let hasProject = false;
     let mergeLabels = [];
-    let projectDetails = {};
+    let projectDetails = {id:''};
     export default {
         server_config,
         hasProject,

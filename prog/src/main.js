@@ -6,7 +6,8 @@ import router from "./index/index";
 import global from './components/global.js';
 import axios from 'axios'
 import qs from 'qs';
-import Global from './Global'
+import Global from './Global';
+import 'echarts-gl';
 
 Vue.use(ElementUI);
 

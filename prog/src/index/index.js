@@ -21,6 +21,8 @@ import IntervalData from '../components/IntervalData';
 import AutoSelectLabel from '../components/AutoSelectLabel';
 import ClusterImage from '../components/ClusterImage';
 import LabelMerger from '../components/LabelMerger';
+import SegyDataImage from '../components/SegyDataImage';
+import test from '../components/test.vue';
 
 Vue.use(Router);
 
@@ -61,6 +63,14 @@ export default new Router({
             {
                 path: '/LabelMerger',
                 component: LabelMerger
+            },
+            {
+                path: '/test',
+                component: test
+            },
+            {
+                path: '/SegyDataImage',
+                component: SegyDataImage
             }
         ],
         

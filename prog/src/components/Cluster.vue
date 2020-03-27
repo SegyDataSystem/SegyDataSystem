@@ -832,6 +832,7 @@
             }
         },
         mounted(){
+            this.workZone = this.$Global.projectDetails.workZone;
             //获取文件列表
             let _this = this;
             this.$axios({
