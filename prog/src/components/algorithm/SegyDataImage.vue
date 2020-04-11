@@ -75,6 +75,55 @@ export default {
         }
     },
     mounted(){
+        let myChartHot = this.$echarts.init(document.getElementById('myChartHot'));
+        let workzone = this.$Global.projectDetails.workZone;
+        let option = {
+                visualMap: {
+                    show: false,
+                    min: -150,
+                    max: 150,
+                    inRange: {
+                        symbolSize: [0.1, 12],
+                        color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026'],
+                        colorAlpha: [0.2, 1]
+                    }
+                },
+                xAxis3D: {
+                    name:'inline',
+                    type: 'value',
+                    min: workzone.inlineFrom,
+                    max: workzone.inlineTo
+                },
+                yAxis3D: {
+                    name:'crossline',
+                    type: 'value',
+                    min: workzone.xlineFrom,
+                    max: workzone.xlineTo
+                },
+                zAxis3D: {
+                    name:'timestep',
+                    type: 'value',
+                    min: workzone.timeFrom,
+                    max: workzone.timeTo
+                },
+                grid3D: {
+                    axisLine: {
+                        lineStyle: { color: '#fff' }
+                    },
+                    axisPointer: {
+                        lineStyle: { color: '#fff' }
+                    },
+                    viewControl: {
+                        // autoRotate: true
+                    }
+                },
+                series: [{
+                    type: 'scatter3D',
+                    data: []
+                }]
+            }
+
+                myChartHot.setOption(option);
 
         // window.console.log(this.$Global.projectDetails);
         // this.$data.imagePath = this.$route.query.imagePath;
@@ -141,7 +190,7 @@ export default {
 
                 let option = {
                 visualMap: {
-                    show: false,
+                    show: true,
                     min: -150,
                     max: 150,
                     inRange: {
@@ -267,13 +316,14 @@ export default {
 
 .image-panel{
     width: 100%;
+    background-color: black;
     /* margin-left:auto;
     margin-right:auto; */
 }
 
 
 .image{
-    width:90%;
+    width:70%;
     margin-left:auto;
     margin-right:auto;
     height:800px;

@@ -1,5 +1,5 @@
 <template>
-    <div id="NewProject">           
+    <div id="AutoSelectLabel">
         <div>
              <div class="import-title-panel">
                 <span class="import-title">
@@ -50,7 +50,7 @@
 
 <script>
     export default {
-        name: "NewProject",
+
         data(){
             return{
                 chooseType:'0',
@@ -73,7 +73,7 @@
 </script>
 
 <style scoped>
-#NewProject{
+#AutoSelectLabel{
     width: 100%;
     height: 100%;
 

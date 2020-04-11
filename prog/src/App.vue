@@ -84,7 +84,7 @@ export default {
 
   }
   .left-panel{
-    width: 300px;
+    width: 400px;
     float: left;
     text-align: center;
     height: 60px;

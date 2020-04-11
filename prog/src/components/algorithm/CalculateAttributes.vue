@@ -1,5 +1,5 @@
 <template>
-    <div id="NewProject">
+    <div id="CalculateAttributes">
         <el-dialog :visible.sync="dialogVisible" width="350px" title="Input">
             <div style="">
                 <span>
@@ -27,7 +27,7 @@
             </div>
         </div>
         <div style="width:70%;margin-left:auto;margin-right:auto;margin-top:20px;">
-            <el-row style="width；100%">
+            <el-row style="width:100%">
                 <el-col style="width:30%">
                     <div class="import-title-panel">
                         <span class="import-title">
@@ -198,7 +198,6 @@
 
 <script>
     export default {
-        name: "NewProject",
         data(){
             return{
                 checkInvalid:true,
@@ -235,7 +234,7 @@
 </script>
 
 <style scoped>
-#NewProject{
+#CalculateAttributes{
     width: 100%;
     height: 100%;
 

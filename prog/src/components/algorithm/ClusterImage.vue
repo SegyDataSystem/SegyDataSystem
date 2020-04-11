@@ -84,7 +84,7 @@ export default {
             useSelectLabel:false,
             chooseLabelX:0,
             chooseLabelY:0,
-            imagePath:require('../assets/back.jpg'),
+            imagePath:require('../../assets/back.jpg'),
             cluster_data:[],
             useData:[],
             modify_x:'',
@@ -187,6 +187,12 @@ export default {
                             color: this.colors[this.choosedColors]
                         }
                     },
+                    grid:{
+                      x:100,
+                      y:30,
+                      x2: 50,
+                      y2:70
+                     },
                     series: [{
                         name: 'Cluster',
                         type: 'heatmap',
@@ -292,7 +298,7 @@ export default {
 
 
 .image{
-    width:500px;
+    width:600px;
     height:400px;
 
     /* background-image: url('../assets/back.jpg'); */

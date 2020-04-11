@@ -428,7 +428,7 @@
 
 
     .useback{
-        background-image: url('../assets/useback.png');
+        background-image: url('../../assets/useback.png');
         background-size: cover;
 
     }

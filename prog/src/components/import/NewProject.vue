@@ -58,69 +58,72 @@
                     </div>
 
                 </div>
-                <div class="form-item-title no-first">
-                    <span class="form-item-title-span">Line Header</span>
-                </div>
-                <div class="form-item-body">
-                    <span>Format:</span>
-                    <el-radio v-model="chooseFormat" label="IBM" style="margin-left: 10px;">IBM</el-radio>
-                    <el-radio v-model="chooseFormat" label="IEEE">IEEE</el-radio>
-                    <el-checkbox label="Flip Bytes">Flip Bytes</el-checkbox>
-                    <el-button type="primary" size="small" style="margin-left:15px;" @click="clickPreview">Preview</el-button>
-                </div>
-
-
-                <div class="form-item-title no-first">
-                    <span class="form-item-title-span">Trace Preview</span>
-                </div>
-                <div class="form-item-body" style="margin-top:5px;">
-                    <div id="myChart" :style="{width: '600px', height: '400px'}"></div>
-                </div>
-
-                 <div class="form-item-title no-first">
-                    <span class="form-item-title-span">Slice Preview</span>
-                </div>
-                <div class="form-item-body" style="margin-top:5px;">
-                    <div>
-                        <span>Slice Type: </span>
-                        <el-select size="small" v-model="chooseDraw" @change="changeDraw">
-                            <el-option value="xline">xline</el-option>
-                            <el-option value="iline">iline</el-option>
-                            <el-option value="depth">depth</el-option>
-                        </el-select>
+                <div v-show="hasChosen">
+                    <div class="form-item-title no-first">
+                        <span class="form-item-title-span">Line Header</span>
                     </div>
-                    <div id="myChartHot" :style="{width: '500px', height: '400px'}"></div>
-                </div>
+                    <div class="form-item-body">
+                        <span>Format:</span>
+                        <el-radio v-model="chooseFormat" label="IBM" style="margin-left: 10px;">IBM</el-radio>
+                        <el-radio v-model="chooseFormat" label="IEEE">IEEE</el-radio>
+                        <el-checkbox label="Flip Bytes">Flip Bytes</el-checkbox>
+                        <el-button type="primary" size="small" style="margin-left:15px;" @click="clickPreview">Preview</el-button>
+                    </div>
+
+
+                    <div class="form-item-title no-first">
+                        <span class="form-item-title-span">Slice Preview</span>
+                    </div>
+                    <div class="form-item-body" style="margin-top:5px;">
+                        <div>
+                            <span>Slice Type: </span>
+                            <el-select size="small" v-model="chooseDraw" @change="changeDraw">
+                                <el-option value="xline">xline</el-option>
+                                <el-option value="iline">iline</el-option>
+                                <el-option value="depth">depth</el-option>
+                            </el-select>
+                        </div>
+                        <div id="myChartHot" :style="{width: '600px', height: '400px'}"></div>
+                    </div>
+
+
+
+                    <div class="form-item-title no-first">
+                        <span class="form-item-title-span">Trace Preview</span>
+                    </div>
+                    <div class="form-item-body" style="margin-top:5px;">
+                        <div id="myChart" :style="{width: '600px', height: '400px'}"></div>
+                    </div>
 
                 
+                    <div class="form-item-title no-first">
+                        <span class="form-item-title-span">Display</span>
+                    </div>
+                    <div class="form-item-body">
+                        <el-radio v-model="chooseDisplay" label="Wiggle" style="margin-left: 10px;">Wiggle</el-radio>
+                        <el-radio v-model="chooseDisplay" label="Histogram">Histogram</el-radio>
+                    </div>
 
-                <div class="form-item-title no-first">
-                    <span class="form-item-title-span">Display</span>
-                </div>
-                <div class="form-item-body">
-                    <el-radio v-model="chooseDisplay" label="Wiggle" style="margin-left: 10px;">Wiggle</el-radio>
-                    <el-radio v-model="chooseDisplay" label="Histogram">Histogram</el-radio>
-                </div>
 
+                    <div class="form-item-title no-first">
+                        <span class="form-item-title-span">Current Trace</span>
+                    </div>
+                    <div class="form-item-body">
+                        <el-row style="width: 330px">
+                            <el-col style="width: 230px;">
+                                <el-slider v-model="trace" @change="changeSlide" style="width: 200px;"></el-slider>
+                            </el-col>
+                            <!-- <el-col style="width: 100px;">
+                                <el-input-number v-model="trace" size="small"></el-input-number>
+                            </el-col> -->
+                        </el-row>
 
-                <div class="form-item-title no-first">
-                    <span class="form-item-title-span">Current Trace</span>
-                </div>
-                <div class="form-item-body">
-                    <el-row style="width: 330px">
-                        <el-col style="width: 230px;">
-                            <el-slider v-model="trace" @change="changeSlide" style="width: 200px;"></el-slider>
-                        </el-col>
-                        <el-col style="width: 100px;">
-                            <el-input-number v-model="trace" size="small"></el-input-number>
-                        </el-col>
-                    </el-row>
-
+                    </div>
                 </div>
 
                 <div class="button-panel">
-                    <el-button type="primary" @click="()=>{this.$data.active=1;this.getTraceHeader()}">Next</el-button>
-                    <el-button @click="()=>{this.$router.push('/')}">Cancel</el-button>
+                    <el-button v-show="hasChosen" type="primary" @click="()=>{this.$data.active=1;this.getTraceHeader()}">Next</el-button>
+                    <el-button type="primary" @click="()=>{this.$router.push('/')}">Cancel</el-button>
                 </div>
             </div>
 
@@ -150,17 +153,17 @@
                             </div>
 
                             <div class="form-item-title no-first">
-                                <span class="form-item-title-span">Trace </span>
+                                <!-- <span class="form-item-title-span">Trace </span> -->
                             </div>
                             <div class="form-item-body">
-                                <el-row style="width: 310px">
+                                <!-- <el-row style="width: 310px">
                                     <el-col style="width: 210px;">
                                         <el-slider v-model="trace" style="width: 180px;"></el-slider>
                                     </el-col>
                                     <el-col style="width: 100px;">
                                         <el-input-number v-model="trace" size="small"></el-input-number>
                                     </el-col>
-                                </el-row>
+                                </el-row> -->
                             </div>
                         </el-col>
                         <el-col style="width: 41%;margin-left: 4%">
@@ -754,9 +757,7 @@
             chooseSegy(index){
                 this.isLoading = true;
                 window.console.log(index);
-                this.$data.chosenFile = this.$data.downloadFileList[index].realName;
                 this.$data.chosenFileId = this.$data.downloadFileList[index].id;
-                this.$data.hasChosen = true;
                 let _this = this;
                 this.$axios({
                     method:'post',
@@ -766,9 +767,21 @@
                         fileId: this.$data.chosenFileId
                     }
                 }).then((response)=>{
-                    window.console.log(response);
+                    if(response.data.code===0){
+                        window.console.log(response);
                     _this.isLoading = false;
                     _this.getSignData();
+                    _this.$data.chosenFile = this.$data.downloadFileList[index].realName;
+                    
+                    _this.$data.hasChosen = true;
+                    }else{
+                        _this.$message({
+                            type:'error',
+                            message:'segy file invalid!'
+                        });
+                        _this.isLoading = false;
+                    }
+                    
                 }).catch((error)=>{
                     window.console.log(error);
                     _this.isLoading = false;
@@ -909,6 +922,12 @@
                             color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
                         }
                     },
+                    grid:{
+                      x:100,
+                      y:30,
+                      x2: 50,
+                      y2:70
+                     },
                     series: [{
                         name: 'Gaussian',
                         type: 'heatmap',
@@ -947,6 +966,12 @@
                 yAxis: {
                     type: 'value'
                 },
+                grid:{
+                      x:100,
+                      y:30,
+                      x2: 50,
+                      y2:70
+                     },
                 series: [{
                     data: this.$data.diagramData,
                     type: 'line',

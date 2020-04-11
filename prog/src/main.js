@@ -23,7 +23,7 @@ new Vue({
   render: h => h(App),
   router,
   created () {
-    this.$axios.defaults.baseURL='http://47.103.212.224:8080/'
+    this.$axios.defaults.baseURL='http://47.103.212.224:8080/'      //服务器地址
    
   },
 }).$mount('#app');

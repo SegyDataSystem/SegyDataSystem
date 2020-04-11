@@ -826,12 +826,24 @@
                     iteration:'',
                     clusterNum:''
                 },
+                transformId:''
                     
                 
 
             }
         },
         mounted(){
+            window.console.log(this.$route.query);
+            if(this.$route.query.label){
+                if(this.$route.query.label === 5){
+                    this.step=2;
+                    // this.$data.files.push(this.$route.query.fileId);
+                    this.chosedFileList.push({
+                        id: this.$route.query.id,
+                        realName: 'ExtrationResult'
+                    });
+                }
+            }
             this.workZone = this.$Global.projectDetails.workZone;
             //获取文件列表
             let _this = this;

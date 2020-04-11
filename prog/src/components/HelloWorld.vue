@@ -25,7 +25,7 @@
           </div>
         </el-dialog>
 
-        <el-dialog :visible.sync="dialogVisibleImportAttribute"  title="create a new project" style="margin-left:auto;margin-right:auto;">
+        <el-dialog :visible.sync="dialogVisibleImportAttribute"  title="please choose a file" style="margin-left:auto;margin-right:auto;">
           <div>
             <el-table :data="downloadFileList" v-show="!hasChosen">
               <el-table-column
@@ -42,7 +42,7 @@
           </div>
           <div style="margin-top:30px;">
 
-            <el-button type="primary" @click="()=>{this.$data.dialogVisible=false;}">Cancel</el-button>
+            <el-button type="primary" @click="()=>{this.$data.dialogVisibleImportAttribute=false;}">Cancel</el-button>
           </div>
         </el-dialog>
       <el-dialog :visible.sync="dialogVisible"  title="please choose a file" style="width:50%;min-width:600px;margin-left:auto;margin-right:auto;">
@@ -55,7 +55,7 @@
           <el-button type="primary" @click="()=>{this.$data.dialogVisible=false;}">Cancel</el-button>
         </div>
       </el-dialog>
-      <el-dialog :visible.sync="dialogVisibleNew"  title="please choose a file" style="width:50%;min-width:600px;margin-left:auto;margin-right:auto;" v-loading="loading1">
+      <el-dialog :visible.sync="dialogVisibleNew"  title="create a new project" style="width:50%;min-width:600px;margin-left:auto;margin-right:auto;" v-loading="loading1">
         <div>
           <el-form :model="formNewProject">
             <el-form-item
@@ -73,20 +73,20 @@
       <div>
         <el-menu  class="el-menu-demo" mode="horizontal"  :router="true">
           <el-submenu index="0" :router="false">
-            <template slot="title">File</template>
+            <template slot="title">Project</template>
             <el-menu-item  @click="dialogVisibleNew=true" >New Project</el-menu-item>
             <el-menu-item  @click="getExistingProjects" >Open Existing Project</el-menu-item>
           </el-submenu>
-          <el-submenu index="2">
+          <el-submenu index="2" v-if="haveNewProject">
             <template slot="title">Import</template>
-            <el-menu-item index="NewProject" >Import Segy Data</el-menu-item>
+            <el-menu-item index="NewProject"   >Import Segy Data</el-menu-item>
             <el-menu-item index="HorizonData">Import Horizon Data</el-menu-item>
             <el-menu-item index="WellData">Import Well Data</el-menu-item>
             <el-menu-item index="IntervalData">Import Interval Data</el-menu-item>
-            <el-menu-item index="CalculateAttributes">Calculate Attributes</el-menu-item>
+            <!-- <el-menu-item index="CalculateAttributes">Calculate Attributes</el-menu-item> -->
 
-          </el-submenu>
-           <el-submenu index="/">
+          </el-submenu >
+           <el-submenu index="/" v-if="haveNewProject">
               <template slot="title">Data Mining</template>
               <el-submenu index="1">
                 <template slot="title">Preprocess</template>
@@ -98,7 +98,7 @@
               <el-menu-item index="/FeatureExtraction">Feature Extraction</el-menu-item>
               <el-menu-item index="/Classification">Classification</el-menu-item>
           </el-submenu>
-          <el-submenu>
+          <el-submenu v-if="haveNewProject">
             <template slot="title">Tools</template>
             <el-menu-item @click="()=>{this.$data.dialogVisible = true;}">Load Colormap</el-menu-item>
           </el-submenu>
@@ -108,21 +108,14 @@
       </div>
       <div style="width:100%;height:40px;border-bottom: 1px solid lightgray">
         <div style="float: left">
-          <div class="icon-image" >
+          <div class="icon-image" @click="dialogVisibleNew=true">
           </div>
         </div>
         <div style="float: left">
-          <div class="icon-image-1">
+          <div class="icon-image-1" @click="getExistingProjects">
           </div>
         </div>
-        <div style="float: left">
-          <div class="icon-image-2">
-          </div>
-        </div>
-        <div style="float: left">
-          <div class="icon-image-3">
-          </div>
-        </div>
+        
 
       </div>
       <div style="margin-top:20px;width: 80%;" >
@@ -146,7 +139,8 @@
               <el-button type="primary" size="small" @click="toScatterProcess">Scatter Process</el-button>
               <el-button type="primary" size="small" @click="toImageDenosing">Image Denoising</el-button>
               <el-button type="primary" size="small" @click="toAutoSelectLabel">Auto Select Label</el-button>
-              <el-button type="primary" size="small" @click="toClusterImage">See Cluster Image</el-button>
+              <el-button type="primary" size="small" v-if="showClusterImage" @click="toClusterImage">See Cluster Image</el-button>
+              <el-button type="primary" size="small" v-if="showCluster" @click="toCluster">Run Cluster</el-button>
             </div>
 
           </el-tab-pane>
@@ -209,6 +203,8 @@
       downloadFileList:[],
       chosenFile:'',
       chosedFileId:'',
+      showCluster: false,
+      showClusterImage: false,
       SeismicData:[],
       FaultData:[],
       WellsData:[],
@@ -233,41 +229,8 @@
     this.getProject();
     this.getDownloadFiles();
     window.console.log(this.$route);
-    if(this.$route.query.a==='a'){
-      window.console.log('ddd');
-      this.$data.data=[ {
-          label: 'SeisMiningMyProject',
-          children: [{
-            label: 'Horizon3D',
-            children: [{
-              label: 'Ha6_T03t-50',
-              children: [
-                {
-                  label:'Attributes',
-                  children:[
-                    {
-                      label:'FeatureExtraction'
-                    },
-                    {
-                      label:'FeatureSelection'
-                    },
-                    {
-                      label:'Cluster'
-                    },
-                    {
-                      label:'Classification'
-                    },
-                    {
-                      label:'Preprocess'
-                    },
-                    
-                  ]
-                }
-              ]
-            }]
-          }]
-        }]
-    }
+    
+    
   },
   methods:{
     chooseProject(index){
@@ -344,7 +307,14 @@
     },
     showTrees(){
       window.console.log('jdiwjdi');
+      if(this.$Global.projectDetails.subProjectList[1].dataMiningList[0].fileList!=null){
+        this.showCluster = true;
 
+      }
+      if(this.$Global.projectDetails.subProjectList[1].dataMiningList[2].fileList!=null){
+        this.showClusterImage = true;
+
+      }
       /**
        * Horizon
        * */
@@ -646,6 +616,14 @@
           });          
         });
       }
+    },
+    toCluster(){
+      // window.console.log(this.$Global.projectDetails.subProjectList[1].dataMiningList);
+      this.$router.push({path:'/Cluster',query:{
+          id: this.$Global.projectDetails.subProjectList[1].dataMiningList[0].fileList[0].id,
+          fileId: this.$Global.projectDetails.subProjectList[1].dataMiningList[0].fileList[0].id,
+          label:5
+          }});
     },
     toClusterImage(){
       

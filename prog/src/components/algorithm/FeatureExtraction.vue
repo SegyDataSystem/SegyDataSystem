@@ -1,5 +1,5 @@
 <template>
-    <div id="NewProject">
+    <div id="NewProject" v-loading="isLoading">
         <div class="import-title-panel">
             <span v-if="step<=2" class="import-title">
                 Feature Extraction Step {{step}} of 2
@@ -398,6 +398,7 @@
                 select3:'0',
                 select4:'0',
                 select5:'PCA',
+                isLoading:false,
                 data: generateData(),
                 value: [],
                 step:1,
@@ -408,14 +409,15 @@
                 chosedFileList:[],
                 workZone:{
                     id:'',
-                    inlineFrom:0,
-                    inlineTo:0,
-                    inlineStep:0,
-                    xlineFrom:0,
-                    xlineTo:0,
-                    xlineStep:0,
-                    timeFrom:0,
-                    timeStep:0,
+                    inlineFrom:this.$Global.projectDetails.workZone.inlineFrom,
+                    inlineTo:this.$Global.projectDetails.workZone.inlineTo,
+                    inlineStep:this.$Global.projectDetails.workZone.inlineStep,
+                    xlineFrom:this.$Global.projectDetails.workZone.xlineFrom,
+                    xlineTo:this.$Global.projectDetails.workZone.xlineTo,
+                    xlineStep:this.$Global.projectDetails.workZone.xlineStep,
+                    timeFrom:this.$Global.projectDetails.workZone.timeFrom,
+                    timeStep:this.$Global.projectDetails.workZone.timeStep,
+                    timeTo:this.$Global.projectDetails.workZone.timeTo,
                 },
                 parameterPCA:[
                     {
@@ -507,6 +509,7 @@
             startCalculatePCA(){
                 let _this = this;
                 let files = [];
+                this.isLoading = true;
                 for(let index = 0; index < this.chosedFileList.length; index++){
                     files.push(this.chosedFileList[index].id);
                 }
@@ -515,13 +518,16 @@
                     url:'/datamining',
                     data:{
                         dataMiningMethod: this.select5,
-                        workZone: this.workZone,
+                        // workZone: this.workZone,
                         subProjectId: this.$Global.projectDetails.subProjectList[1].id,
-                        fileId:files,
-                        parameters: this.parameterPCA
+                        fileIdList:files,
+                        parameters:{
+                           k: this.parameterPCA[0].value
+                        } 
                     }
                 }).then((response)=>{
                     window.console.log(response);
+                    _this.isLoading = false;
                     _this.$router.push('/');
                     _this.$message({
                         type:'success',
