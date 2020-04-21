@@ -30,7 +30,7 @@
                         </el-table>
                     </div>
                     <div style="margin-top: 30px;">
-                        <el-table :data="tableDataColumn" v-show="hasChosen" height="200">
+                        <el-table :data="tableDataColumn" v-show="hasChosen" height="500">
                             <el-table-column
                                     label="data column"
                             >
@@ -51,47 +51,47 @@
                     <el-col style="width:50%">
                         <div>
                             <span style="display:inline-block; width:60px;">Inline: </span>
-                            <el-select size="small" v-model="chooseInline" style="margin-left:10px;width:100px;">
-                                <el-option v-for="(item, index) in tableDataColumn.length" :value="index" :key="index" :label="'column'+index"></el-option>
+                            <el-select size="small" v-model="chooseInline" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition=true}">
+                                <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
                             </el-select>
                         </div>
                         <div style="margin-top:10px;">
                             <span style="display:inline-block; width:60px;">TimeStart: </span>
-                            <el-select size="small" v-model="chooseInline" style="margin-left:10px;width:100px;">
-                                <el-option v-for="(item, index) in tableDataColumn.length" :value="index" :key="index" :label="'column'+index"></el-option>
+                            <el-select size="small" v-model="chooseInline1" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition1=true}">
+                                <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
                             </el-select>
                         </div>
                         <div style="margin-top:10px;">
                             <span style="display:inline-block; width:60px;">FileName: </span>
-                            <el-select size="small" v-model="chooseInline" style="margin-left:10px;width:100px;">
-                                <el-option v-for="(item, index) in tableDataColumn.length" :value="index" :key="index" :label="'column'+index"></el-option>
+                            <el-select size="small" v-model="chooseInline5" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition2=true}">
+                                <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
                             </el-select>
                         </div>
                     </el-col>
                     <el-col style="width:50%">
                         <div>
                             <span style="display:inline-block; width:60px;">Xline: </span>
-                            <el-select size="small" v-model="chooseInline" style="margin-left:10px;width:100px;">
-                               <el-option v-for="(item, index) in tableDataColumn.length" :value="index" :key="index" :label="'column'+index"></el-option>
+                            <el-select size="small" v-model="chooseInline2" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition3=true}">
+                               <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
                             </el-select>
                         </div>
                         <div style="margin-top:10px;">
                             <span style="display:inline-block; width:60px;">TimeEnd: </span>
-                            <el-select size="small" v-model="chooseInline" style="margin-left:10px;width:100px;">
-                                <el-option v-for="(item, index) in tableDataColumn.length" :value="index" :key="index" :label="'column'+index"></el-option>
+                            <el-select size="small" v-model="chooseInline3" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition4=true}">
+                                <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
                             </el-select>
                         </div>
                         <div style="margin-top:10px;">
                             <span style="display:inline-block; width:60px;">Type: </span>
-                            <el-select size="small" v-model="chooseInline" style="margin-left:10px;width:100px;">
-                                <el-option v-for="(item, index) in tableDataColumn.length" :value="index" :key="index" :label="'column'+index"></el-option>
+                            <el-select size="small" v-model="chooseInline4" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition5=true}">
+                                <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
                             </el-select>
                         </div>
                     </el-col>
                 </el-row>
             </div>
             
-            <div class="form-item-title" style="margin-top:20px;">
+            <div class="form-item-title" style="margin-top:20px;" >
                 <span class="form-item-title-span">Sign Data</span>
             </div>
             <div style="margin-top:20px;">
@@ -173,7 +173,7 @@
             </div>
             
             <div style="margin-top:30px;">
-                <el-button type="primary" @click="()=>{this.$router.push('/')}">Import File</el-button>
+                <el-button type="primary" @click="()=>{this.postWell()}">Import File</el-button>
                  <el-button type="primary" @click="()=>{this.$router.push('/')}">Cancel</el-button>
             </div>
             <div style="width:100%;height:50px;"></div>
@@ -188,7 +188,19 @@
         data(){
             return{
                 checkInvalid:true,
-                chooseInline:'column1',
+                chooseInline:'',
+                chooseInline1:'',
+                chooseInline2:'',
+                chooseInline3:'',
+                chooseInline4:'',
+                chooseInline5:'',
+                showSignCondition:false,
+                showSignCondition1:false,
+                showSignCondition2:false,
+                showSignCondition3:false,
+                showSignCondition4:false,
+                showSignCondition5:false,
+
                 columns:[
                     1,2,3,4,5,6,7,8,9,10,11
                 ],
@@ -217,15 +229,15 @@
                 },
                 setWorkzoneData:{
                     id: this.$Global.projectDetails.workZone.id,
-                    inlineFrom:'',
-                    inlineTo:'',
-                    inlineStep:'',
-                    xlineFrom:'',
-                    xlineTo:'',
-                    xlineStep:'',
-                    timeFrom:'',
-                    timeTo:'',
-                    timeStep:'',
+                    inlineFrom:'470',
+                    inlineTo:'1070',
+                    inlineStep:'1',
+                    xlineFrom:'480',
+                    xlineTo:'1180',
+                    xlineStep:'1',
+                    timeFrom:'2500',
+                    timeTo:'3100',
+                    timeStep:'2',
                 },
                 xdata:[],
                 ydata:[],
@@ -238,9 +250,12 @@
              //获取文件列表
             let _this = this;
             this.$axios({
-                method:'get',
-                url: this.$Global.server_config.url+'/downloadFile/fileList?userId='+this.$Global.server_config.userId,
-
+                method:'post',
+                url: this.$Global.server_config.url+'/downloadFile/fileList',
+                data:{
+                    userId:this.$Global.server_config.userId,
+                    type:'Well'
+                }
             }).then((response)=>{
                 _this.downloadFileList = response.data;
             });
@@ -254,11 +269,10 @@
                 this.$data.hasChosen = true;
                 let _this = this;
                 this.$axios({
-                    method:'post',
+                    method:'get',
                     url:'/wells',
                     params:{
-                        subProjectId: this.$Global.projectDetails.subProjectList[3].id,
-                        fileId: this.$data.chosenFileId
+                        fileId: this.$data.chosenFileId,
                     }
                 }).then((response)=>{
                     window.console.log(response);
@@ -286,7 +300,7 @@
                     method:'get',
                     url:'/segy/depth/1',
                     params:{
-                        subProjectId: this.$Global.projectDetails.subProjectList[0].id
+                        fileId: this.$Global.projectDetails.subProjectList[0].file.id
                     }
                 }).then((response)=>{
                     _this.$data.displayData = response.data.data;
@@ -347,6 +361,9 @@
                             color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
                         }
                     },
+                    grid:{
+                        x2: 50,
+                    },
                     series: [{
                         name: 'Gaussian',
                         type: 'heatmap',
@@ -368,14 +385,21 @@
             },
             getSignData(){
                 let _this = this;
-                this.$axios({
-                    method:'get',
-                    url:'/project/workzone/'+this.$Global.projectDetails.workZone.id,
-                }).then((response)=>{
-                    _this.signData = response.data.data;
-                    _this.setSignData();
-                    _this.changeDraw();
-                })
+                if(this.showSignCondition&&this.showSignCondition1&&this.showSignCondition2&&this.showSignCondition3&&this.showSignCondition4&&this.showSignCondition5){
+                    this.$axios({
+                        method:'get',
+                        url:'/project/workzone/'+this.$Global.projectDetails.workZone.id,
+                    }).then((response)=>{
+                        _this.signData = response.data.data;
+                        _this.setSignData();
+                        _this.changeDraw();
+                    })
+                }else{
+                    this.$message({
+                        type:'error',
+                        message:'Please finish all the data column selection!'
+                    });
+                }
             },
             setSignData(){
                 for(let i = 0; i < this.tableDataColumnSplit.length; i++){
@@ -385,14 +409,17 @@
                 }
                 
             },
-            postWorkzone(){
+            postWell(){
                 let _this = this;
                 let myChartHot = this.$echarts.init(document.getElementById('myChartHot'));
                 myChartHot.dispose();
                 this.$axios({
                     method:'post',
-                    url:'/project/workzone',
-                    data: this.setWorkzoneData
+                    url:'/wells',
+                    params: {
+                        projectId: this.$Global.projectDetails.id,
+                        fileId: this.$data.chosenFileId
+                    }
                 }).then((response)=>{
                     if(response.data.code===0){
                         _this.$message({

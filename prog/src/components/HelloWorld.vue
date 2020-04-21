@@ -55,14 +55,20 @@
           <el-button type="primary" @click="()=>{this.$data.dialogVisible=false;}">Cancel</el-button>
         </div>
       </el-dialog>
-      <el-dialog :visible.sync="dialogVisibleNew"  title="create a new project" style="width:50%;min-width:600px;margin-left:auto;margin-right:auto;" v-loading="loading1">
+      <el-dialog :visible.sync="dialogVisibleNew"  title="Create a new project" style="width:50%;min-width:600px;margin-left:auto;margin-right:auto;" v-loading="loading1">
         <div>
           <el-form :model="formNewProject">
             <el-form-item
-              label="project name:"
+              label="Project Name:"
             >
               <el-input v-model="formNewProject.name"></el-input>
             </el-form-item>
+            <el-form-item
+              label="Project Description:"
+            >
+              <el-input v-model="formNewProject.description" type="textarea"></el-input>
+            </el-form-item>
+            
           </el-form>
         </div>
         <div style="margin-top:30px;">
@@ -79,7 +85,7 @@
           </el-submenu>
           <el-submenu index="2" v-if="haveNewProject">
             <template slot="title">Import</template>
-            <el-menu-item index="NewProject"   >Import Segy Data</el-menu-item>
+            <el-menu-item index="NewProject" v-show="showSegyFlag">Import Segy Data</el-menu-item>
             <el-menu-item index="HorizonData">Import Horizon Data</el-menu-item>
             <el-menu-item index="WellData">Import Well Data</el-menu-item>
             <el-menu-item index="IntervalData">Import Interval Data</el-menu-item>
@@ -123,10 +129,10 @@
         <el-tabs type="border-card" style="box-shadow:0 0 0 white" v-if="haveNewProject">
 
           <el-tab-pane label="Seismic">
-            <el-tree :data="SeismicData" :props="defaultProps" ref="treeSeismic"  show-checkbox></el-tree>
+            <el-tree :data="SeismicData" :check-strictly="true" :props="defaultProps" ref="treeSeismic"  show-checkbox></el-tree>
             <div style="margin-top:50px;width: 98%;margin-right:auto;margin-left:auto;text-align:left">
-              <el-button type="primary" size="small" @click="getCheckedNodes">Export Seismic Data</el-button>
-              <el-button type="primary" size="small" @click="()=>{this.$router.push('/SegyDataImage')}">Seismic Data Image</el-button>
+              <el-button type="primary" size="small" @click="importSegyAttribute">Import Seismic Attribute</el-button>
+              <el-button type="primary" size="small" @click="showSeismicImage">Seismic Data Image</el-button>
             </div>
           </el-tab-pane>
 
@@ -142,7 +148,6 @@
               <el-button type="primary" size="small" v-if="showClusterImage" @click="toClusterImage">See Cluster Image</el-button>
               <el-button type="primary" size="small" v-if="showCluster" @click="toCluster">Run Cluster</el-button>
             </div>
-
           </el-tab-pane>
           <el-tab-pane label="Interval">
             <el-tree :data="IntervalData" :props="defaultProps"  show-checkbox></el-tree>
@@ -178,15 +183,7 @@
     return{
       projectList:[],
       dialogVisibleExisting: false,
-      data: [ {
-          label: 'SeisMiningMyProject',
-          children: [{
-            label: 'Horizon3D',
-            children: [{
-              label: 'Ha6_T03t-50'
-            }]
-          }]
-        }],
+      data: [ ],
         defaultProps: {
           children: 'children',
           label: 'label'
@@ -195,7 +192,8 @@
       dialogVisibleNew:false,
       haveNewProject: this.$Global.hasProject,
       formNewProject:{
-        name:''
+        name:'',
+        description:'',
       },
       v_loading: false,
       loading1: false,
@@ -208,7 +206,8 @@
       SeismicData:[],
       FaultData:[],
       WellsData:[],
-      IntervalData:[]
+      IntervalData:[],
+      showSegyFlag:false,
     }
   },
     watch:{
@@ -219,6 +218,11 @@
           url:'/project/'+this.$Global.projectDetails.id,
         }).then((response)=>{
           _this.$Global.projectDetails = response.data.data;
+          if(response.data.data.subProjectList){
+            _this.showSegyFlag=false;
+          }else{
+            _this.showSegyFlag=true;
+          }
           window.console.log('jjj');
           _this.showTrees();
         })
@@ -300,6 +304,11 @@
           url: '/project/' + this.$Global.projectDetails.id,
         }).then((response) => {
           _this.$Global.projectDetails = response.data.data;
+          if(response.data.data.subProjectList){
+            _this.showSegyFlag=false;
+          }else{
+            _this.showSegyFlag=true;
+          }
           window.console.log('222');
           _this.showTrees();
         })
@@ -307,14 +316,18 @@
     },
     showTrees(){
       window.console.log('jdiwjdi');
-      if(this.$Global.projectDetails.subProjectList[1].dataMiningList[0].fileList!=null){
-        this.showCluster = true;
-
+      if(this.$Global.projectDetails.subProjectList[1]){
+        if(this.$Global.projectDetails.subProjectList[1].dataMiningList){
+          if(this.$Global.projectDetails.subProjectList[1].dataMiningList[0].fileList!=null){
+            this.showCluster = true;
+          }
+          if(this.$Global.projectDetails.subProjectList[1].dataMiningList[2].fileList!=null){
+            this.showClusterImage = true;
+          }
+        }
+        
       }
-      if(this.$Global.projectDetails.subProjectList[1].dataMiningList[2].fileList!=null){
-        this.showClusterImage = true;
-
-      }
+      
       /**
        * Horizon
        * */
@@ -333,7 +346,8 @@
                 children:[]
               }]
           }];
-          for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
+          if(HorizonProject.dataMiningList){
+            for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
             tempHorizonTreeData[0].children[0].children[0].children.push({
               label: HorizonProject.dataMiningList[item].type,
               children:[]
@@ -347,6 +361,8 @@
               }
             }
           }
+          }
+          
 
         }
         this.$data.data = tempHorizonTreeData;
@@ -369,20 +385,23 @@
               children:[]
             }]
           }];
-          for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
-            tempHorizonTreeData[0].children[0].children[0].children.push({
-              label: HorizonProject.dataMiningList[item].type,
-              children:[]
-            });
-            if(HorizonProject.dataMiningList[item].fileList){
-              let tempFileList = HorizonProject.dataMiningList[item].fileList;
-              for(let index = 0;index<tempFileList.length;index++){
-                tempHorizonTreeData[0].children[0].children[0].children[item].children.push({
-                  label: tempFileList[index].realName
-                })
+          if(HorizonProject.dataMiningList){
+            for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
+              tempHorizonTreeData[0].children[0].children[0].children.push({
+                label: HorizonProject.dataMiningList[item].type,
+                children:[]
+              });
+              if(HorizonProject.dataMiningList[item].fileList){
+                let tempFileList = HorizonProject.dataMiningList[item].fileList;
+                for(let index = 0;index<tempFileList.length;index++){
+                  tempHorizonTreeData[0].children[0].children[0].children[item].children.push({
+                    label: tempFileList[index].realName
+                  })
+                }
               }
             }
           }
+          
 
         }
         this.$data.SeismicData = tempHorizonTreeData;
@@ -398,7 +417,7 @@
           label:'Interval',
         }];
         if(HorizonProject.file){
-          tempHorizonTreeData[2].children=[{
+          tempHorizonTreeData[0].children=[{
             label: HorizonProject.file.realName,
             id: HorizonProject.file.id,
             children:[{
@@ -406,7 +425,9 @@
               children:[]
             }]
           }];
-          for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
+          
+          if(HorizonProject.dataMiningList){
+            for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
             tempHorizonTreeData[0].children[0].children[0].children.push({
               label: HorizonProject.dataMiningList[item].type,
               children:[]
@@ -420,6 +441,8 @@
               }
             }
           }
+          }
+          
 
         }
         this.$data.IntervalData = tempHorizonTreeData;
@@ -428,7 +451,7 @@
       /**
        * Wells
        * */
-      if(this.$Global.projectDetails.subProjectList[3]){
+      if(this.$Global.projectDetails.subProjectList[2]){
         let HorizonProject = this.$Global.projectDetails.subProjectList[3];
         let tempHorizonTreeData=[{
           label:'Wells',
@@ -442,7 +465,8 @@
               children:[]
             }]
           }];
-          for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
+          if(HorizonProject.dataMiningList){
+            for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
             tempHorizonTreeData[0].children[0].children[0].children.push({
               label: HorizonProject.dataMiningList[item].type,
               children:[]
@@ -456,6 +480,8 @@
               }
             }
           }
+          }
+          
 
         }
         this.$data.WellsData = tempHorizonTreeData;
@@ -479,7 +505,8 @@
               children:[]
             }]
           }];
-          for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
+          if(HorizonProject.dataMiningList){
+            for(let item = 0;item < HorizonProject.dataMiningList.length; item++){
             tempHorizonTreeData[0].children[0].children[0].children.push({
               label: HorizonProject.dataMiningList[item].type,
               children:[]
@@ -493,6 +520,8 @@
               }
             }
           }
+          }
+          
 
         }
         this.$data.FaultData = tempHorizonTreeData;
@@ -511,13 +540,13 @@
         url:'/project',
         params:{
           name: this.formNewProject.name,
-          userId: this.$Global.server_config.userId
+          userId: this.$Global.server_config.userId,
+          description: this.formNewProject.description
         }
       }).then((response)=>{
         _this.$Global.projectDetails = response.data.data;
         _this.$Global.hasProject=true;
         _this.haveNewProject = true;
-
         _this.v_loading=false;
         _this.showTrees();
         _this.$message({
@@ -525,6 +554,17 @@
           message:'project created successfully!'
         })
       })
+    },
+    importSegyAttribute(){
+      let tree = this.$refs.treeSeismic.getCheckedNodes();
+      if(tree.length === 1 && tree[0].label === 'Attributes'){
+        this.$router.push('/ImportSegyAttribute');
+      }else{
+        this.$message({
+          type:'error',
+          message: 'Please select the Attributes node!'
+        });
+      }
     },
     getCheckedNodes(){
       /* eslint-disable*/
@@ -638,6 +678,28 @@
         this.$router.push({path:'/ClusterImage',query:{
           id: this.$Global.projectDetails.subProjectList[1].dataMiningList[2].fileList[0].id}});
       }
+    },
+    showSeismicImage(){
+      let tree = this.$refs.treeSeismic.getCheckedNodes();
+      if(tree.length > 1){
+        this.$message({
+          type:'error',
+          message:'Please select only one node!'
+        })
+      }else{
+        if(tree[0].label.indexOf('.sgy') !== -1){
+          console.log(this.$Global.projectDetails);
+          this.$router.push({path:'/SegyDataImage', query:{fileId: this.$Global.projectDetails.subProjectList[0].file.id}});
+        }else{
+          this.$message({
+            type:'error',
+            message:'Please select a segy file!'
+          })
+        }
+      }
+      console.log(tree);
+
+      // this.$router.push('/SegyDataImage')
     }
   }
 }

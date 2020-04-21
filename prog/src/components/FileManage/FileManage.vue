@@ -1,24 +1,20 @@
 <template>
     <div id="file-manage">
         <div style="width: 100%;height:80px;" class="my-header">
-            <span>Segy Data File Manage</span>
+            <span>Segy Data File Management</span>
         </div>
         <el-container class="my-container">
 
             <el-container>
                 <el-aside>
-                    <el-menu  style="height: 300px">
+                    <el-menu  style="height: 300px;text-align:left">
                         <el-menu-item index="0"  @click="()=>{this.$data.useIndex=0;}">
                             <i class="el-icon-menu"></i>
-                            <span slot="title">single file upload</span>
+                            <span slot="title">Single file upload</span>
                         </el-menu-item>
                         <el-menu-item index="1" @click="()=>{this.$data.useIndex=1;}">
                             <i class="el-icon-tickets"></i>
-                            <span slot="title">big file upload</span>
-                        </el-menu-item>
-                        <el-menu-item index="2" @click="()=>{this.$data.useIndex=2;}">
-                            <i class="el-icon-document"></i>
-                            <span slot="title">Quick Upload</span>
+                            <span slot="title">Big file upload</span>
                         </el-menu-item>
                         <el-menu-item index="3" @click="()=>{this.$data.useIndex=3;this.reloadDownload();}">
                             <i class="el-icon-download"></i>
@@ -57,9 +53,27 @@
                                             <el-option value="Fault"></el-option>
                                         </el-select>
                                     </div>
-                                    <div style="height: 20px;">
-
+                                    <div style="margin-top: 30px;">
+                                        <div>
+                                            <span>File Description:</span>
+                                        </div>
+                                        <div>
+                                            <el-input type="textarea" style="width:500px;" v-model="singleOptions.description"></el-input>
+                                        </div>
                                     </div>
+                                    <div style="margin-top: 30px;margin-bottom:50px;">
+                                        <div>
+                                            <span>Is Public:</span>
+                                            
+                                            <el-switch
+                                                style="margin-left:20px;"
+                                                v-model="singleOptions.isPublic"
+                                                active-text="public"
+                                                inactive-text="private">
+                                            </el-switch>
+                                        </div>
+                                    </div>
+                                    
                                     <el-button id="browse_button" size="small" type="primary">select file</el-button>
                                     <el-button type="danger"  size="small" @click="uploadStartSingle">start upload</el-button>
                                     <div style="font-size: 14px;margin-top: 10px;" v-for="(file,index) in filesSingle" :key="index">{{file.name}}</div>
@@ -69,7 +83,7 @@
                                     </el-dialog>
                                     <br/>
                                     <br/>
-                                    <el-tag type="warning">file max length:400kb</el-tag>
+                                    <el-tag type="warning">file max length:100MB</el-tag>
                                 </div>
                         </div>
 
@@ -98,6 +112,26 @@
                                     <el-option value="Well"></el-option>
                                     <el-option value="Fault"></el-option>
                                 </el-select>
+                                <div style="margin-top: 30px;">
+                                        <div>
+                                            <span>File Description:</span>
+                                        </div>
+                                        <div>
+                                            <el-input type="textarea" style="width:500px;" v-model="BigOptions.description"></el-input>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 30px;margin-bottom:50px;">
+                                        <div>
+                                            <span>Is Public:</span>
+                                            
+                                            <el-switch
+                                                style="margin-left:20px;"
+                                                v-model="BigOptions.isPublic"
+                                                active-text="public"
+                                                inactive-text="private">
+                                            </el-switch>
+                                        </div>
+                                    </div>
                                 <div style="width: 100%;height: 20px;"></div>
                                 <el-button type="primary" id="browse_button_big" size="small">Select File</el-button>
                                 <el-button type="primary" @click="BigFileStart" size="small">Start</el-button>
@@ -135,12 +169,8 @@
                                     </el-table-column>
                                 </el-table>
                                 <br/>
-
-
                             </div>
                         </div>
-
-
                     </div>
 
                     <div  v-if="useIndex===2">
@@ -202,14 +232,8 @@
                                     </el-table-column>
                                 </el-table>
                                 <br/>
-
-
-
                             </div>
                         </div>
-
-
-
                     </div>
                     <div v-if="useIndex===4">
                         <div style="padding-left: 5px;text-align: left">
@@ -273,6 +297,17 @@
 
                             <div style="padding-left: 5px;text-align: left;margin-top:40px;">
                                 <span style="font-size: 25px;">Already Uploaded File</span>
+                                <div>
+                                    <span>File Type:</span>
+                                    <el-select v-model="fileTypeType" size="small">
+                                        <el-option value="Horizon"></el-option>
+                                        <el-option value="Seismic"></el-option>
+                                        <el-option value="Interval"></el-option>
+                                        <el-option value="Well"></el-option>
+                                        <el-option value="Fault"></el-option>
+                                    </el-select>
+
+                                </div>
                                 <div style="padding-left: 20px;">
                                     <el-table
 
@@ -310,29 +345,59 @@
                         <div style="padding-left: 5px;text-align: left">
                             <div style="padding-left: 5px;text-align: left;margin-top:0px;">
                                 <span style="font-size: 25px;">Already Uploaded File</span>
+                                
+                                <div style="margin-top: 30px;">
+                                        <span>File Type:</span>
+                                        <el-select v-model="fileTypeSelect" size="small" style="margin-left: 5px;" @change="changeFileDownload">
+                                            <el-option value="Horizon"></el-option>
+                                            <el-option value="Seismic"></el-option>
+                                            <el-option value="Interval"></el-option>
+                                            <el-option value="Well"></el-option>
+                                            <el-option value="Fault"></el-option>
+                                        </el-select>
+                                </div>
+                                
                                 <div style="padding-left: 20px;margin-top: 20px;">
                                     <el-table
                                             :data="tableDataDownload"
-                                            style="width: 70%; margin: 10px 10px;">
+                                            style="width: 85%; margin: 10px 10px;">
                                         <el-table-column
                                                 label="File Name"
                                                 prop="realName"
                                         >
                                         </el-table-column>
                                         <el-table-column
-                                                label="savedName"
-                                                prop="savedName"
+                                                label="File Type"
+                                                prop="fileType"
                                         >
                                         </el-table-column>
                                         <el-table-column
-                                                label="md5"
-                                                prop="md5"
+                                                label="createTime"
+                                                
+                                        >  
+                                            <template slot-scope="scope">
+                                                <span>{{scope.row.createTime.slice(0,10)}}</span>                                                
+                                            </template>
+                                        </el-table-column>
+                                        <el-table-column
+                                                label="Visibility"
+                                        >
+                                            <template slot-scope="scope">
+                                                <span v-if="scope.row.isPublic">public</span>
+                                                <span v-if="!scope.row.isPublic">private</span>
+                                            </template>
+                                        </el-table-column>
+                                        <el-table-column
+                                                label="Description"
+                                                prop="description"
                                         >
                                         </el-table-column>
                                         <el-table-column
-                                                label="operation">
+                                                label="operation"
+                                                width="250">
                                             <template slot-scope="scope">
                                                 <el-button type="primary" size="small" @click="downloadFileQuick(scope.$index)">download</el-button>
+                                                <el-button type="danger" size="small" @click="deleteDownloadFile(scope.$index)">delete</el-button>
                                             </template>
                                         </el-table-column>
                                     </el-table>
@@ -364,6 +429,7 @@
                 useIndex:0,
                 dialogTableVisible: false,
                 dialogTableVisibleSingle: false,
+                fileTypeSelect:'Seismic',
                 filesSingle:[],
                 files:[],
                 up:{},
@@ -375,13 +441,15 @@
                 singleOptions:{
                     type: 'Horizon',
                     isPublic: false,
-                    userId: '10000'
+                    userId: '10000',
+                    description: '',
                 },
                 //big file
                 BigOptions:{
                     type: 'Horizon',
                     isPublic: false,
-                    userId: '10000'
+                    userId: '10000',
+                    description: '',
                 },
                 upBig:{
 
@@ -395,7 +463,8 @@
                 quickOptions:{
                     type: 'Horizon',
                     isPublic: false,
-                    userId: '10000'
+                    userId: '10000',
+                    description: '',
                 },
                 tableDataQuick: [],
 
@@ -456,9 +525,10 @@
         mounted(){
             let _this = this;
             this.$axios({
-                method: 'get',
+                method: 'post',
                 url: this.$Global.server_config.url+'/downloadFile/fileList',
-                params:{
+                data:{
+                    type:'Horizon',
                     userId: '10000'
                 }
 
@@ -469,15 +539,38 @@
 
         },
         methods: {
+            deleteDownloadFile(index){
+                let _this = this;
+                this.$axios({
+                    method:'delete',
+                    url: this.$Global.server_config.url+'/updateFile',
+                    data:{
+                        fileId: _this.$data.tableDataDownload[index].id
+                    }
+                }).then((res)=>{
+                    if(res.data.code===0){
+                        _this.$message({
+                            type:'success',
+                            message:'file deleted successfully'
+                        });
+                        _this.$data.tableDataDownload.splice(index, 1);
+                    }else{
+                        _this.$message({
+                            type:'error',
+                            message:'error:file cannot be deleted'
+                        });
+                    }
+                })
+            },
             reloadDownload(){
                 let _this = this;
                 this.$axios({
-                    method: 'get',
+                    method: 'post',
                     url: this.$Global.server_config.url+'/downloadFile/fileList',
-                    params:{
-                        userId: '10000'
+                    data:{
+                        userId: '10000',
+                        type: this.$data.fileTypeSelect
                     }
-
                 }).then((response)=>{
                     _this.$data.tableDataDownload = response.data;
                     window.console.log(response.data);
@@ -494,19 +587,33 @@
             inputUploaderSingle(up) {
                 this.upSingle = up;
                 this.filesSingle = up.files;
-                window.console.log('11111111dw');
+                
                 // window.console.log(this.upS);
             },
             uploadStartSingle() {
                 this.dialogTableVisibleSingle = true;
                 this.upSingle.start();
+            },
 
+            changeFileDownload(){
+                let _this = this;
+                this.$axios({
+                method: 'post',
+                url: this.$Global.server_config.url+'/downloadFile/fileList',
+                data:{
+                    type: this.$data.fileTypeSelect,
+                    userId: '10000'
+                }
 
+            }).then((response)=>{
+                _this.$data.tableDataDownload = response.data;
+                window.console.log(response.data);
+            })
             },
 
 
             inputUploaderBig(up) {
-                window.console.log('dwdwdw');
+                
                 this.upBig = up;
                 this.filesBig = up.files;
             },
@@ -524,10 +631,11 @@
                 this.upBig.removeFile(file);
             },
             beforeUploadBig(up, file) {
-                up.setOption("multipart_params", {"size":file.size,"type":this.BigOptions.type,"md5":file.md5,"userId":this.BigOptions.userId,"isPublic":this.$data.BigOptions.isPublic});
+                
+                up.setOption("multipart_params", {"size":file.size,"type":this.BigOptions.type,"md5":file.md5,"userId":this.BigOptions.userId,"isPublic":this.$data.BigOptions.isPublic,"description":this.$data.BigOptions.description});
             },
             BigFileStart(){
-                window.console.log(this.upBig);
+                
                 this.upBig.start();
             },
 
@@ -574,13 +682,7 @@
             },
             downloadFileQuick(id){
                 window.console.log(id);
-                // this.$axios({
-                //     method:'get',
-                //     url: this.$Global.server_config.url+'/downloadFile/'+'1213762585929601025',
-                //     responseType:'blob'
-                // }).then((response)=>{
-                //     window.console.log(response);
-                // })
+
                 let _this = this;
                 this.$axios.get(this.$Global.server_config.url+'/downloadFile/'+_this.$data.tableDataDownload[id].id,{responseType: 'blob'}).then((res) => {
                     if (!res) {

@@ -30,6 +30,7 @@
                 <el-step title="Step 2"></el-step>
                 <el-step title="Step 3"></el-step>
                 <el-step title="Step 4"></el-step>
+                
             </el-steps>
         </div>
         <div class="import-details-panel">
@@ -49,6 +50,11 @@
                                 label="file name"
                                 >
                             </el-table-column>
+                            <el-table-column
+                                prop="description"
+                                label="description"
+                                >
+                            </el-table-column>
                             <el-table-column>
                                 <template slot-scope="scope">
                                     <el-button type="primary" size="small" @click="chooseSegy(scope.$index)">select</el-button>
@@ -64,27 +70,12 @@
                     </div>
                     <div class="form-item-body">
                         <span>Format:</span>
-                        <el-radio v-model="chooseFormat" label="IBM" style="margin-left: 10px;">IBM</el-radio>
-                        <el-radio v-model="chooseFormat" label="IEEE">IEEE</el-radio>
+                        <el-radio v-model="baseInfo.dataFormat" label="4-byte IBM float" style="margin-left: 10px;">IBM</el-radio>
+                        <el-radio v-model="baseInfo.dataFormat" label="IEEE">IEEE</el-radio>
                         <el-checkbox label="Flip Bytes">Flip Bytes</el-checkbox>
                         <el-button type="primary" size="small" style="margin-left:15px;" @click="clickPreview">Preview</el-button>
                     </div>
-
-
-                    <div class="form-item-title no-first">
-                        <span class="form-item-title-span">Slice Preview</span>
-                    </div>
-                    <div class="form-item-body" style="margin-top:5px;">
-                        <div>
-                            <span>Slice Type: </span>
-                            <el-select size="small" v-model="chooseDraw" @change="changeDraw">
-                                <el-option value="xline">xline</el-option>
-                                <el-option value="iline">iline</el-option>
-                                <el-option value="depth">depth</el-option>
-                            </el-select>
-                        </div>
-                        <div id="myChartHot" :style="{width: '600px', height: '400px'}"></div>
-                    </div>
+                    
 
 
 
@@ -96,13 +87,13 @@
                     </div>
 
                 
-                    <div class="form-item-title no-first">
+                    <!-- <div class="form-item-title no-first">
                         <span class="form-item-title-span">Display</span>
                     </div>
                     <div class="form-item-body">
                         <el-radio v-model="chooseDisplay" label="Wiggle" style="margin-left: 10px;">Wiggle</el-radio>
                         <el-radio v-model="chooseDisplay" label="Histogram">Histogram</el-radio>
-                    </div>
+                    </div> -->
 
 
                     <div class="form-item-title no-first">
@@ -111,23 +102,98 @@
                     <div class="form-item-body">
                         <el-row style="width: 330px">
                             <el-col style="width: 230px;">
-                                <el-slider v-model="trace" @change="changeSlide" style="width: 200px;"></el-slider>
+                                <el-slider v-model="trace" @change="changeSlide" :min="0" :max="baseInfo.traceNum" style="width: 200px;"></el-slider>
                             </el-col>
-                            <!-- <el-col style="width: 100px;">
-                                <el-input-number v-model="trace" size="small"></el-input-number>
-                            </el-col> -->
+                            <el-col style="width: 100px;">
+                                <el-input-number v-model="trace" size="small" @change="changeSlide"></el-input-number>
+                            </el-col>
                         </el-row>
 
                     </div>
                 </div>
 
                 <div class="button-panel">
-                    <el-button v-show="hasChosen" type="primary" @click="()=>{this.$data.active=1;this.getTraceHeader()}">Next</el-button>
+                    <el-button v-show="hasChosen" type="primary" @click="()=>{this.$data.active=1;this.getWorkZone();}">Next</el-button>
                     <el-button type="primary" @click="()=>{this.$router.push('/')}">Cancel</el-button>
                 </div>
             </div>
 
             <div v-if="active===1">
+                <div class="form-item-title no-first">
+                        <span class="form-item-title-span">Slice Preview</span>
+                </div>
+                <div class="form-item-body" style="margin-top:5px;">
+                    <div>
+                        <span>Slice Type: </span>
+                        <el-select size="small" v-model="chooseDraw" >
+                            <el-option value="xline">crossline</el-option>
+                            <el-option value="iline">inline</el-option>
+                            <el-option value="depth">time</el-option>
+                        </el-select>
+                    </div>
+                    <div v-if="chooseDraw==='xline'" style="margin-top:20px;">
+                        <div>
+                            <el-row>
+                                <el-col style="width:100px;">
+                                    <div style="margin-top:10px;">Crossline: </div>
+                                </el-col>
+                                <el-col style="width:200px;">
+                                    <el-slider v-model="changeDrawValueXline"  :min="workzone.xlineFrom" :max="workzone.xlineTo" style="width: 200px;"></el-slider>
+                                </el-col>
+                                <el-col style="width:200px;margin-left:10px;">
+                                    <el-input-number v-model="changeDrawValueXline" size="small"></el-input-number>
+                                </el-col>
+                            </el-row>
+                            
+                        </div>
+                        
+                    </div>
+                    <div v-if="chooseDraw==='iline'" style="margin-top:20px;">
+                        <div>
+                            <el-row>
+                                <el-col style="width:100px;">
+                                    <div style="margin-top:10px;">Inline: </div>
+                                </el-col>
+                                <el-col style="width:200px;">
+                                    <el-slider v-model="changeDrawValueIline"  :min="workzone.inlineFrom" :max="workzone.inlineTo" style="width: 200px;"></el-slider>
+                                </el-col>
+                                <el-col style="width:200px;margin-left:10px;">
+                                    <el-input-number v-model="changeDrawValueIline" size="small"></el-input-number>
+                                </el-col>
+                            </el-row>
+                            
+                        </div>
+                        
+                    </div>
+                    <div v-if="chooseDraw==='depth'" style="margin-top:20px;">
+                        <div>
+                            <el-row>
+                                <el-col style="width:100px;">
+                                    <div style="margin-top:10px;">Depth: </div>
+                                </el-col>
+                                <el-col style="width:200px;">
+                                    <el-slider v-model="changeDrawValueDepth"  :min="workzone.timeFrom" :max="workzone.timeTo" style="width: 200px;"></el-slider>
+                                </el-col>
+                                <el-col style="width:200px;margin-left:10px;">
+                                    <el-input-number v-model="changeDrawValueDepth" size="small"></el-input-number>
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </div>
+                    <div style="margin-top:30px;">
+                        <el-button type="primary" size="small" @click="changeDraw">Show Slice</el-button>
+                    </div>
+                    <div id="myChartHot" :style="{width: '600px', height: '400px'}" style="margin-top:30px;"></div>
+                </div>
+                <div class="button-panel">
+                    <el-button @click="()=>{this.$data.active=1}">Back</el-button>
+                    <el-button v-show="hasChosen" type="primary" @click="()=>{this.$data.active=2;this.getTraceHeader()}">Next</el-button>
+                    <el-button type="primary" @click="()=>{this.$router.push('/')}">Cancel</el-button>
+                </div>
+
+            </div>
+
+            <div v-if="active===2">
                 <div class="step2-panel">
                     <el-row style="width:100%">
                         <el-col style="width: 55%;">
@@ -137,9 +203,9 @@
                             <div class="form-item-body">
                                 <el-table
                                     :data="tableData"
-                                    style="border: 1px solid lightgray;height:300px;"
+                                    style="border: 1px solid lightgray;height:500px;"
                                     stripe
-                                    height="250"
+                                    height="500"
                                 >
                                     <el-table-column label="Bytes" >
                                         <template slot-scope="scope">
@@ -187,7 +253,7 @@
                                         <span>Inline Bin:</span>
                                     </el-col>
                                     <el-col style="width:33%">
-                                        <input style="width: 80%;" v-model="s2in1"/>
+                                        <input style="width: 80%;" v-model="baseInfo.inlineBin"/>
                                     </el-col>
                                     <el-col style="width:33%">
                                         <input style="width: 80%;" v-model="s2in2"/>
@@ -198,7 +264,7 @@
                                         <span>Crossline Bin:</span>
                                     </el-col>
                                     <el-col style="width:33%">
-                                        <input style="width: 80%;" v-model="s2in3"/>
+                                        <input style="width: 80%;" v-model="baseInfo.crosslineBin"/>
                                     </el-col>
                                     <el-col style="width:33%">
                                         <input style="width: 80%;" v-model="s2in4"/>
@@ -226,7 +292,7 @@
                                         <span>Coordinate X:</span>
                                     </el-col>
                                     <el-col style="width:33%">
-                                        <input style="width: 80%;" v-model="s2in5"/>
+                                        <input style="width: 80%;" v-model="baseInfo.coordinateX"/>
                                     </el-col>
                                     <el-col style="width:33%">
                                         <input style="width: 80%;" v-model="s2in6"/>
@@ -237,19 +303,13 @@
                                         <span>Coordinate Y:</span>
                                     </el-col>
                                     <el-col style="width:33%">
-                                        <input style="width: 80%;" v-model="s2in7"/>
+                                        <input style="width: 80%;" v-model="baseInfo.coordinateY"/>
                                     </el-col>
                                     <el-col style="width:33%">
                                         <input style="width: 80%;" v-model="s2in8"/>
                                     </el-col>
                                 </el-row>
-                                <div style="width: 100%;margin-top: 5px;">
-                                    <el-checkbox label="Float" v-model="checkFloat" disabled>Float</el-checkbox>
-                                </div>
-                                <div style="width: 100%;margin-top: 5px;">
-                                    <el-checkbox v-model="checkOverrideScaling" >Override Scaling</el-checkbox>
-                                    <input :disabled="!checkOverrideScaling" v-model="overrideScaling" style="width:40px;margin-left: 10px;"/>
-                                </div>
+                                
                             </div>
 
                             <div class="form-item-title no-first">
@@ -267,15 +327,15 @@
                     </el-row>
 
                     <div class="button-panel">
-                        <el-button @click="()=>{this.$data.active=0}">Back</el-button>
-                        <el-button type="primary" @click="()=>{this.$data.active=2}">Next</el-button>
+                        <el-button @click="()=>{this.$data.active=2}">Back</el-button>
+                        <el-button type="primary" @click="()=>{this.$data.active=3}">Next</el-button>
                         <el-button @click="()=>{this.$router.push('/')}">Cancel</el-button>
 
                     </div>
                 </div>
             </div>
 
-            <div v-if="active===2">
+            <div v-if="active===5">
                 <div class="step3-panel">
                     <el-row style="width:100%">
                         <el-col style="width: 48%;">
@@ -422,7 +482,7 @@
 
 
                     <div class="button-panel">
-                        <el-button @click="()=>{this.$data.active=1}">Back</el-button>
+                        <el-button @click="()=>{this.$data.active=3}">Back</el-button>
                         <el-button type="primary" @click="clickNext">Next</el-button>
                         <el-button @click="()=>{this.$router.push('/')}">Cancel</el-button>
 
@@ -456,13 +516,13 @@
                                 <span>Crossline</span>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" disabled v-model="put1" />
+                                <input style="width:150px;" disabled v-model="workzone.inlineFrom" />
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" disabled v-model="put2"/>
+                                <input style="width:150px;" disabled v-model="workzone.inlineTo"/>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" disabled v-model="put3"/>
+                                <input style="width:150px;" disabled v-model="workzone.inlineStep"/>
                             </el-col>
                         </el-row>
                          <el-row style="width:100%;margin-top:10px">
@@ -470,13 +530,13 @@
                                 <span>Inline</span>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" disabled v-model="put4"/>
+                                <input style="width:150px;" disabled v-model="workzone.xlineFrom"/>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" disabled v-model="put5"/>
+                                <input style="width:150px;" disabled v-model="workzone.xlineTo"/>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" disabled v-model="put6"/>
+                                <input style="width:150px;" disabled v-model="workzone.xlineStep"/>
                             </el-col>
                         </el-row>
                          <el-row style="width:100%;margin-top:10px;">
@@ -484,13 +544,13 @@
                                 <span>Two-Way Time</span>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" disabled v-model="put7"/>
+                                <input style="width:150px;" disabled v-model="workzone.timeFrom"/>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" disabled v-model="put8"/>
+                                <input style="width:150px;" disabled v-model="workzone.timeTo"/>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" disabled v-model="put9"/>
+                                <input style="width:150px;" disabled v-model="workzone.timeStep"/>
                             </el-col>
                         </el-row>
                     </div>
@@ -517,13 +577,28 @@
                                 <span>Crossline</span>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" v-model="put10"/>
+                                <div>
+                                    <input style="width:150px;"  v-model="workzoneOutput.inlineFrom"/>
+                                </div>
+                                <div v-show="workzoneOutputFlag.inlineFrom">
+                                    <span class="validation">value invalid!</span>
+                                </div>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" v-model="put11"/>
+                                <div>
+                                    <input style="width:150px;"  v-model="workzoneOutput.inlineTo"/>
+                                </div>
+                                <div v-show="workzoneOutputFlag.inlineTo">
+                                    <span class="validation">value invalid!</span>
+                                </div>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" v-model="put12"/>
+                                <div>
+                                    <input style="width:150px;"  v-model="workzoneOutput.inlineStep"/>
+                                </div>
+                                <div v-show="workzoneOutputFlag.inlineStep">
+                                    <span class="validation">value invalid!</span>
+                                </div>
                             </el-col>
                         </el-row>
                          <el-row style="width:100%;margin-top:10px">
@@ -531,13 +606,28 @@
                                 <span>Inline</span>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" v-model="put13"/>
+                                <div>
+                                    <input style="width:150px;"  v-model="workzoneOutput.xlineFrom"/>
+                                </div>
+                                <div v-show="workzoneOutputFlag.xlineFrom">
+                                    <span class="validation">value invalid!</span>
+                                </div>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" v-model="put14"/>
+                                <div>
+                                    <input style="width:150px;"  v-model="workzoneOutput.xlineTo"/>
+                                </div>
+                                <div v-show="workzoneOutputFlag.xlineTo">
+                                    <span class="validation">value invalid!</span>
+                                </div>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" v-model="put15"/>
+                                <div>
+                                    <input style="width:150px;"  v-model="workzoneOutput.xlineStep"/>
+                                </div>
+                                <div v-show="workzoneOutputFlag.xlineStep">
+                                    <span class="validation">value invalid!</span>
+                                </div>
                             </el-col>
                         </el-row>
                          <el-row style="width:100%;margin-top:10px;">
@@ -545,27 +635,32 @@
                                 <span>Two-Way Time</span>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" v-model="put16"/>
+                                <div>
+                                    <input style="width:150px;"  v-model="workzoneOutput.timeFrom"/>
+                                </div>
+                                <div v-show="workzoneOutputFlag.timeFrom">
+                                    <span class="validation">value invalid!</span>
+                                </div>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" v-model="put17"/>
+                                <div>
+                                    <input style="width:150px;"  v-model="workzoneOutput.timeTo"/>
+                                </div>
+                                <div v-show="workzoneOutputFlag.timeTo">
+                                    <span class="validation">value invalid!</span>
+                                </div>
                             </el-col>
                             <el-col style="width: 25%">
-                                <input style="width:150px;" v-model="put18"/>
+                                <div>
+                                    <input style="width:150px;"  v-model="workzoneOutput.timeStep"/>
+                                </div>
+                                <div v-show="workzoneOutputFlag.timeStep">
+                                    <span class="validation">value invalid!</span>
+                                </div>
                             </el-col>
                         </el-row>
                     </div>
 
-
-                     <div class="form-item-title" style="margin-top:30px;">
-                        <span class="form-item-title-span">Z Axis Unit</span>
-                    </div>
-                    <div class="form-item-body">
-                        <span>Time</span>
-                        <el-select v-model="chooseTime" size="small" style="width: 100px;margin-left:20px;">
-                            <el-option value="Milliseconds"></el-option>
-                        </el-select>
-                    </div>
                     <div style="width: 100%;height:1px;background-color:whitesmoke;margin-top:20px;"></div>
                     <div style="margin-top:20px;">
                         <div style="margin-top:10px;">
@@ -609,7 +704,10 @@
         name: "NewProject",
         data(){
             return{
-                chooseDraw:'',
+                chooseDraw:'xline',
+                changeDrawValueIline:'',
+                changeDrawValueXline:'',
+                changeDrawValueDepth:'',
                 dialogVisible: false,
                 chosenFile:'',
                 hasChosen: false,
@@ -619,6 +717,7 @@
                 chooseTime:'',
                 chooseUnit:'Masters',
                 chooseFormat:'IBM',
+                traceNum:'',
                 chooseDisplay:'Wiggle',
                 chooseSurvey:'XY Coordinate from 3 point definition',
                 trace:1,
@@ -680,15 +779,67 @@
                 diagramData:[],
                 signData:[],
                 xlabel:'',
-                ylabel:''
+                ylabel:'',
+                workzoneOutput:{
+                    id: null,
+                    inlineFrom: 470,
+                    inlineStep: 1,
+                    inlineTo: 1070,
+                    timeFrom: 2500,
+                    timeStep: 2,
+                    timeTo: 3100,
+                    xlineFrom: 480,
+                    xlineStep: 1,
+                    xlineTo: 1180,
+                },
+                workzoneOutputFlag:{
+                    inlineFrom: false,
+                    inlineTo: false,
+                    inlineStep: false,
+                    xlineFrom: false,
+                    xlineTo: false,
+                    xlineStep: false,
+                    timeFrom: false,
+                    timeTo: false,
+                    timeStep: false,
+                },
+
+                workzone:{
+                    id: null,
+                    inlineFrom: 470,
+                    inlineStep: 1,
+                    inlineTo: 1070,
+                    timeFrom: 2500,
+                    timeStep: 2,
+                    timeTo: 3100,
+                    xlineFrom: 480,
+                    xlineStep: 1,
+                    xlineTo: 1180,
+                },
+                baseInfo:{
+                    coordinateX:'',
+                    coordinateY:'',
+                    crosslineBin:'',
+                    dataFormat:'',
+                    inlineBin:'',
+                    traceNum:''
+                }
+                
             }
+        },
+        watch:{
+
         },
         mounted() {
             //获取文件列表
             let _this = this;
             this.$axios({
-                method:'get',
-                url: this.$Global.server_config.url+'/downloadFile/fileList?userId='+this.$Global.server_config.userId,
+                method:'post',
+                url: this.$Global.server_config.url+'/downloadFile/fileList',
+                data:{
+                    userId:this.$Global.server_config.userId,
+                    type:'Seismic'
+                }
 
             }).then((response)=>{
                 _this.downloadFileList = response.data;
@@ -698,9 +849,24 @@
 
 
 
-            
-        },
+       },
         methods:{
+            getWorkZone(){
+                let _this = this;
+                this.$axios({
+                    method:'get',
+                    url:'/segy/workzone',
+                    params:{
+                        fileId: this.$data.chosenFileId
+                    }
+                }).then((response)=>{
+                    _this.$data.workzone = response.data.data;
+                    // _this.$data.workzoneOutput = response.data.data;
+                    _this.changeDrawValueIline = response.data.data.inlineFrom;
+                    _this.changeDrawValueXline = response.data.data.xlineFrom;
+                    _this.changeDrawValueDepth = response.data.dara.timeFrom;
+                })
+            },
             seeLineHeader(){
                 let _this = this;
                 this.isLoading=true;
@@ -709,7 +875,7 @@
                     method:'get',
                     url:'/segy/binheader',
                     params:{
-                        subProjectId: this.$Global.projectDetails.subProjectList[0].id
+                        fileId: this.$data.chosenFileId
                     },
                     headers:{
                         'Content-Type':'application/json'
@@ -737,7 +903,7 @@
                     method:'get',
                     url:'/segy/trace/'+this.$data.chosenFileId+'/header',
                     params:{
-                        subProjectId: this.$Global.projectDetails.subProjectList[0].id
+                        fileId: this.$data.chosenFileId
                     },
                     headers:{
                         'Content-Type':'application/json'
@@ -760,20 +926,19 @@
                 this.$data.chosenFileId = this.$data.downloadFileList[index].id;
                 let _this = this;
                 this.$axios({
-                    method:'post',
-                    url:'/segy',
+                    method:'get',
+                    url:'/segy/validation',
                     params:{
-                        subProjectId: this.$Global.projectDetails.subProjectList[0].id,
                         fileId: this.$data.chosenFileId
                     }
                 }).then((response)=>{
                     if(response.data.code===0){
                         window.console.log(response);
-                    _this.isLoading = false;
-                    _this.getSignData();
-                    _this.$data.chosenFile = this.$data.downloadFileList[index].realName;
-                    
-                    _this.$data.hasChosen = true;
+                        _this.isLoading = false;
+                        // _this.getSignData();
+                        _this.$data.chosenFile = this.$data.downloadFileList[index].realName;
+                        _this.$data.hasChosen = true;
+                        _this.getBaseInfo();
                     }else{
                         _this.$message({
                             type:'error',
@@ -788,16 +953,22 @@
                 })
 
             },
-            getSignData(){
+            getBaseInfo(){
                 let _this = this;
                 this.$axios({
                     method:'get',
-                    url:'/project/workzone/'+this.$Global.projectDetails.workZone.id,
+                    url:'/segy/baseInfo',
+                    params:{
+                        fileId: this.$data.chosenFileId
+                    }
                 }).then((response)=>{
-                    _this.signData = response.data.data; 
-                    window.console.log(response.data.data); 
+                    window.console.log(response.data.data.dataFormat);
+                    _this.chooseFormat = response.data.data.dataFormat;
+                    _this.traceNum = response.data.data.traceNum;
+                    _this.baseInfo = response.data.data;
                 });
             },
+            
             changeDraw(){
                 this.isLoading = true;
                 let change = this.$data.chooseDraw;
@@ -805,9 +976,10 @@
                 if(change==='depth'){
                 this.$axios({
                     method:'get',
-                    url:'/segy/'+change+'/1',
+                    url:'/segy/'+change+'/'+ (this.changeDrawValueDepth-this.workzone.timeFrom),
                     params:{
-                        subProjectId: this.$Global.projectDetails.subProjectList[0].id
+                        // subProjectId: this.$Global.projectDetails.subProjectList[0].id
+                        fileId: this.$data.chosenFileId
                     }
                 }).then((response)=>{
                     _this.$data.displayData = response.data.data;
@@ -819,16 +991,17 @@
                     _this.isLoading = false;
                     window.console.log(err);
                 })
-                }else{
+                }else if(change==='xline'){
                     this.$axios({
                         method:'get',
-                        url:'/segy/'+change+'/500',
+                        url:'/segy/'+change+'/'+ this.changeDrawValueXline,
                         params:{
-                            subProjectId: this.$Global.projectDetails.subProjectList[0].id
+                            // subProjectId: this.$Global.projectDetails.subProjectList[0].id,
+                            fileId: this.$data.chosenFileId
                         }
                     }).then((response)=>{
                         _this.$data.displayData = response.data.data;
-                        window.console.log(response.data);
+                        
                         _this.checkSliceEcharts();
                         //  window.console.log(response);
                         _this.isLoading = false;
@@ -837,6 +1010,23 @@
                         window.console.log(err);
                     })
 
+                }else{
+                    this.$axios({
+                        method:'get',
+                        url:'/segy/'+change+'/'+ this.changeDrawValueIline,
+                        params:{
+                            // subProjectId: this.$Global.projectDetails.subProjectList[0].id,
+                            fileId: this.$data.chosenFileId
+                        }
+                    }).then((response)=>{
+                        _this.$data.displayData = response.data.data;
+                        _this.checkSliceEcharts();
+                        //  window.console.log(response);
+                        _this.isLoading = false;
+                    }).catch((err)=>{
+                        _this.isLoading = false;
+                        window.console.log(err);
+                    })
                 }
 
             },
@@ -847,56 +1037,55 @@
                 let xlimit = totalNum;
                 let ylimit = this.$data.displayData[0].length;
 
-                window.console.log(this.signData);
 
                 if(this.chooseDraw==='xline'){
-                    window.console.log(1);
-                    for(let i = 0; i < xlimit/2; i=i+this.signData.inlineStep){
-                        this.$data.xdata.push(i*2+parseInt(this.signData.inlineFrom));
+                    
+
+                    for(let i = 0; i < xlimit/2; i=i+this.workzone.inlineStep){
+                        this.$data.xdata.push(i*2+parseInt(this.workzone.inlineFrom));
                     }
 
-                    for(let i = 0; i < ylimit/2; i=i+this.signData.timeStep){
-                        this.$data.ydata.push(i*2+parseInt(this.signData.timeFrom));
+                    for(let i = 0; i < ylimit/2; i=i+this.workzone.timeStep){
+                        this.$data.ydata.push(i*2+parseInt(this.workzone.timeFrom));
                         
                     }
-                    this.xlabel='inline';
+                    this.xlabel='i';
                     this.ylabel='time';
                 }else if(this.chooseDraw==='iline'){
-                    for(let i = 0; i < xlimit/2; i=i+this.signData.xlineStep){
-                    this.$data.xdata.push(i*2+parseInt(this.signData.xlineFrom));
+                    for(let i = 0; i < xlimit/2; i=i+this.workzone.xlineStep){
+                    this.$data.xdata.push(i*2+parseInt(this.workzone.xlineFrom));
                     // this.$data.xdata.push(i+470);
-                    
                     }
 
-                    for(let i = 0; i < ylimit/2; i=i+this.signData.timeStep){
-                        this.$data.ydata.push(i*2+parseInt(this.signData.timeFrom));
+                    for(let i = 0; i < ylimit/2; i=i+this.workzone.timeStep){
+                        this.$data.ydata.push(i*2+parseInt(this.workzone.timeFrom));
                         // this.$data.ydata.push(i+480);
-                        
                     }
-                    this.xlabel='xline';
+                    this.xlabel='x';
                     this.ylabel='time';
                 }else{
                     for(let i = 0; i < xlimit/2; i++){
-                        this.$data.xdata.push(i*2+parseInt(this.signData.inlineFrom));
+                        this.$data.xdata.push(i*2+parseInt(this.workzone.inlineFrom));
                         // this.$data.xdata.push(i+470);
                     }
 
                     for(let i = 0; i < ylimit/2; i++){
-                        this.$data.ydata.push(i*2+parseInt(this.signData.xlineFrom));
+                        this.$data.ydata.push(i*2+parseInt(this.workzone.xlineFrom));
                         // this.$data.ydata.push(i+480);
                     }
-                    this.xlabel='inline';
-                    this.ylabel='xline';
+                    this.xlabel='i';
+                    this.ylabel='x';
                 }
 
                 window.console.log(this.$data.xdata);
+
 
                 
 
                 // let index = 0;
                 for(let x = 0; x < xlimit/2; x++){
                     for(let y = 0; y < ylimit/2; y++){
-                        data.push([x, y, (this.$data.displayData[x*2][y*2]*1.0)/10000000]);
+                        data.push([x, y, (this.$data.displayData[x*2][y*2]*1.0)/1000000]);
                     }
                 }
 
@@ -904,18 +1093,20 @@
                 let option = {
                     tooltip: {},
                     xAxis: {
+                        name: this.xlabel,
                         type: 'category',
                         data: this.$data.xdata,
                         label: this.xlabel
                     },
                     yAxis: {
+                        name: this.ylabel,
                         type: 'category',
                         data: this.$data.ydata,
                         label: this.ylabel
                     },
                     visualMap: {
-                        min: -150,
-                        max: 150,
+                        min: -500,
+                        max: 500,
                         calculable: true,
                         realtime: false,
                         inRange: {
@@ -989,28 +1180,27 @@
                 let _this = this;
                 setTimeout(function(){
                     _this.$data.isLoading=false;
-                    _this.$data.active=3;
+                    _this.$data.active=4;
                 },2000);
                 
                                                                
             },
 
             clickPreview(){
-                window.console.log(this.$Global.projectDetails);
                 let _this = this;
                 this.isLoading = true;
                 this.$axios({
                     method:'get',
-                    url:'/segy/trace/field',
+                    url:'/segy/trace/'+this.traceNum+'/data',
                     params:{
-                        subProjectId: this.$Global.projectDetails.subProjectList[0].id,
-                        fileId: this.chosenFileId
+                        fileId: this.$data.chosenFileId
                     },
-                    headers:{
-                        'Content-Type':'application/json'
-                    }
+                    // headers:{
+                    //     'Content-Type':'application/json'
+                    // }
                 }).then((response)=>{
                     window.console.log(response.data);
+                    _this.diagramData = response.data.data;
                     _this.isLoading = false;
                     _this.checkEcharts();
                 }).catch((error)=>{
@@ -1025,8 +1215,7 @@
                     method:'get',
                     url:'/segy/trace/'+val+'/data',
                     params:{
-                        subProjectId: this.$Global.projectDetails.subProjectList[0].id,
-
+                        fileId: this.$data.chosenFileId
                     },
                     headers:{
                         'Content-Type':'application/json'
@@ -1035,27 +1224,91 @@
                     window.console.log(response.data);
                     _this.diagramData = response.data.data;
                     _this.checkEcharts();
-
                 })
             },
             finishFunc(){
-                // let _this = this;
 
-                // this.$message({
-                //     type:'info',
-                //     message:'Import Segy Data...'
-                // })
-                // this.$data.isLoading=true;
-                // let _this = this;
-                // setTimeout(function(){
-                //     _this.$data.isLoading=false;
-                //     _this.$router.push('/');
-                // },2000);
-                this.$router.push('/');
-                this.$message({
-                    type:'success',
-                    message:'import success'
-                });
+                let form = this.$data.workzoneOutput;
+                let workzone = this.$data.workzone;
+                let flag = true;
+
+                if(form.inlineFrom < workzone.inlineFrom || form.inlineFrom > workzone.inlineTo || form.inlineFrom > form.inlineTo){
+                    this.$data.workzoneOutputFlag.inlineFrom = true;
+                    flag = false;
+                }
+
+                if(form.inlineTo < workzone.inlineTo || form.inlineTo > workzone.inlineTo || form.inlineTo < form.inlineFrom){
+                    this.$data.workzoneOutputFlag.inlineTo = true;
+                    flag = false;
+                }
+
+                if(form.inlineStep % this.$data.inlineStep != 0 && form.inlineStep == 0){
+                    this.$data.workzoneOutputFlag.inlineStep = true;
+                    flag = false;
+                }
+
+
+                if(form.xlineFrom < workzone.xlineFrom || form.xlineFrom > workzone.xlineTo || form.xlineFrom > form.xlineTo){
+                    this.$data.workzoneOutputFlag.xlineFrom = true;
+                    flag = false;
+                }
+
+                if(form.xlineTo < workzone.xlineTo || form.xlineTo > workzone.xlineTo || form.xlineTo < form.xlineFrom){
+                    this.$data.workzoneOutputFlag.xlineTo = true;
+                    flag = false;
+                }
+
+                if(form.xlineStep % this.$data.xlineStep != 0 && form.xlineStep == 0){
+                    this.$data.workzoneOutputFlag.xlineStep = true;
+                    flag = false;
+                }
+
+                if(form.timeFrom < workzone.timeFrom || form.timeFrom > workzone.timeTo || form.timeFrom > form.timeTo){
+                    this.$data.workzoneOutputFlag.timeFrom = true;
+                    flag = false;
+                }
+
+                if(form.timeTo < workzone.timeTo || form.timeTo > workzone.timeTo || form.timeTo < form.timeFrom){
+                    this.$data.workzoneOutputFlag.timeTo = true;
+                    flag = false;
+                }
+
+                if(form.timeStep % this.$data.timeStep != 0 && form.timeStep == 0){
+                    this.$data.workzoneOutputFlag.timeStep = true;
+                    flag = false;
+                }
+
+                if(flag===false){
+                    this.$message({
+                        type:'error',
+                        message:'value invalid'
+                    })
+                }else{
+                    // 
+                    this.$data.isLoading = true;
+                    let _this = this;
+                    this.$axios({
+                        method:'post',
+                        url:'/segy',
+                        params:{
+                            projectId: this.$Global.projectDetails.id,
+                            fileId: this.$data.chosenFileId
+                        },
+                        data: this.$data.workzoneOutput
+                    }).then((response)=>{
+                        if(response.data.code===0){
+                            _this.$router.push('/');
+                            _this.$data.isLoading = true;
+                            _this.$message({
+                                type:'success',
+                                message:'Import Successfully'
+                            });
+                        }
+                    })
+                    
+                }
+    
+                
             },
             getTraceField(){
                 // let _this = this;
@@ -1082,6 +1335,12 @@
 </script>
 
 <style scoped>
+
+.validation{
+    font-size: 12px;
+    color: red;
+}
+
 #NewProject{
     width: 100%;
     height: 100%;

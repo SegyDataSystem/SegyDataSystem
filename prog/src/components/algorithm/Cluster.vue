@@ -16,29 +16,28 @@
                     <span class="form-item-title-span">Data Selection</span>
                 </div>
                 <div class="form-item-body">
-                    <el-select v-model="select1" placeholder="select...">
-                        <el-option value="0" label="Seismic3D"></el-option>
+                    <el-select v-model="select1" placeholder="select..."  @change="getSecondOptions">
+                        <el-option v-for="(item,index) in optionsSelect1" :value="index" :label="item.name" :key="index"></el-option>
                     </el-select>
-                    <el-select v-model="select2" placeholder="select...">
-                        <el-option value="0" label="Poststack Amplitude"></el-option>
+                    <el-select v-model="select2" placeholder="select..." style="margin-left:60px;" :disabled="canSelect" @change="getAllFiles">
+                        <el-option v-for="(item,index) in optionsSelect2" :value="index" :label="item.name" :key="index"></el-option>
                     </el-select>
-                    <el-select v-model="select3" placeholder="select...">
+                    <!-- <el-select v-model="select3" placeholder="select..." style="width:150px;" size="small">
                         <el-option value="0" label="Preprocess"></el-option>
                     </el-select>
-                    <el-select v-model="select4" placeholder="select...">
+                    <el-select v-model="select4" placeholder="select..." style="width:150px;" size="small">
                         <el-option value="0" label="SRC"></el-option>
-                    </el-select>
+                    </el-select> -->
                 </div>
                 <div class="form-item-body">
                     <el-transfer v-model="value" :data="tableData" @change="changeChoose" :titles="['file uploaded', 'file chosen']"></el-transfer>
                 </div>
-                <div class="form-item-body">
-                    <el-button type="primary">Show Correlation Diagram</el-button>
-                    <el-button type="primary">Show Histogram</el-button>
-                </div>
+                
                 <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
                 <div style="margin-top:30px;">
-                    <el-button  @click="()=>{
+                    <el-button
+                        type="primary"
+                        @click="()=>{
                         this.$data.step=2;
                     }">Next</el-button>
                     <el-button  @click="()=>{this.$router.push('/')}">Cancel</el-button>
@@ -608,28 +607,33 @@
         name: "NewProject",
 
         data(){
-            const generateData = _ => {
-            const data = [];
-            window.console.log(_);
+            // const generateData = _ => {
+            // const data = [];
+            // window.console.log(_);
             
-                data.push({
-                    key: 1000,
-                    label: 'SRC_dn_rms_poststackamplitude',
-                    disabled: false
-                });
+            //     data.push({
+                    
+            //     });
                 
-                return data;
-            };
+            //     return data;
+            // };
             return{
+                optionsSelect1:[
+
+                ],
+                optionsSelect2:[
+
+                ],
+                canSelect: true,
                 loading1: false,
                 chooseFloat:'IBM',
                 checkInvalid:true,
-                select1:'0',
-                select2:'0',
+                select1: 5,
+                select2: '',
                 select3:'0',
                 select4:'0',
                 select5:'K_MEANS',
-                tableData: generateData(),
+                tableData: [],
                 value: [],
                 step:1,
 
@@ -833,6 +837,24 @@
             }
         },
         mounted(){
+
+            //获取第一个选择框
+            let project = this.$Global.projectDetails.subProjectList;
+
+            for(let index = 0; index < project.length; index++){
+                this.$data.optionsSelect1.push({
+                    name:project[index].type
+                });
+            }
+            this.$data.optionsSelect1.push({
+                    name:'请选择'
+                });
+            this.$data.select1 = project.length;
+            window.console.log(this.$data.optionsSelect1);
+
+
+
+
             window.console.log(this.$route.query);
             if(this.$route.query.label){
                 if(this.$route.query.label === 5){
@@ -845,25 +867,34 @@
                 }
             }
             this.workZone = this.$Global.projectDetails.workZone;
-            //获取文件列表
-            let _this = this;
-            this.$axios({
-                method:'get',
-                url: this.$Global.server_config.url+'/downloadFile/fileList?userId='+this.$Global.server_config.userId,
-
-            }).then((response)=>{
-                _this.downloadFileList = response.data;
-                for(let index = 0; index < _this.downloadFileList.length; index++){
-                    _this.tableData.push({
-                        key: index,
-                        label: _this.downloadFileList[index].realName,
-                        disabled: false
-                    });
-                }
-
-            });
+            
         },
         methods:{
+            getAllFiles(val){
+                let _this = this;
+                let project = this.$Global.projectDetails;
+                this.$axios({
+                    methods:'get',
+                    url:'/project/'+project.id+'/file',
+                    params:{
+                        subProjectType: project.subProjectList[this.select1].type,
+                        dataMiningType: project.subProjectList[this.select1].dataMiningList[val].type
+                    }
+                }).then((response)=>{
+                    window.console.log(response.data);
+                    _this.downloadFileList = response.data.data;
+                })
+            },
+            getSecondOptions(val){
+                this.canSelect = false;
+                let project = this.$Global.projectDetails.subProjectList;
+                window.console.log(val);
+                for(let index = 0; index < project[val].dataMiningList.length; index++){
+                    this.optionsSelect2.push({
+                        name: project[val].dataMiningList[index].type
+                    });
+                }
+            },
             startCalculateImage(){
                 let _this = this;
                 let files = [];
@@ -1113,7 +1144,7 @@
 
     }
     .import-details-panel{
-        width: 53%;
+        width: 55%;
         margin-left: auto;
         margin-right: auto;
         margin-top: 20px;

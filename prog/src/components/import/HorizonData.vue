@@ -32,7 +32,11 @@
                         </el-table>
                     </div>
                     <div style="margin-top: 30px;">
-                        <el-table :data="tableData" v-show="hasChosen" height="200">
+                        <el-table :data="tableData" v-show="hasChosen" height="400">
+                            <el-table-column
+                            type="index"
+                            width="50">
+                            </el-table-column>
                             <el-table-column
                                     label="data column"
                             >
@@ -41,12 +45,20 @@
                                 </template>
                             </el-table-column>
                         </el-table>
+                        <el-pagination
+                            style="margin-top:20px;"
+                            v-show="hasChosen"
+                            layout="pager, jumper"
+                            @current-change="changePage"
+                            :total="100">
+                        </el-pagination>
+                        
                     </div>
 
                 </div>
             </div>
             <div v-show="hasChosen">
-                <div class="form-item-title" style="margin-top:20px;">
+                <div class="form-item-title" style="margin-top:40px;">
                     <span class="form-item-title-span">Set data column</span>
                 </div>
                 <div class="form-item-body">
@@ -55,19 +67,19 @@
                             <div>
                                 <span style="display:inline-block; width:60px;">Inline: </span>
                                 <el-select size="small" v-model="formColumns.iline" style="margin-left:10px;width:100px;">
-                                    <el-option v-for="(item, index) in tableData.length" value="index" :key="index" :label="'column'+index"></el-option>
+                                    <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
                                 </el-select>
                             </div>
                             <div style="margin-top:10px;">
                                 <span style="display:inline-block; width:60px;">X: </span>
                                 <el-select size="small" v-model="formColumns.x" style="margin-left:10px;width:100px;">
-                                    <el-option v-for="(item, index) in tableData.length" :value="index" :key="index" :label="'column'+index"></el-option>
+                                    <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
                                 </el-select>
                             </div>
                             <div style="margin-top:10px;">
                                 <span style="display:inline-block; width:60px;">Name: </span>
                                 <el-select size="small" v-model="chooseInline" style="margin-left:10px;width:100px;">
-                                    <el-option v-for="(item, index) in tableData.length" :value="index" :key="index" :label="'column'+index"></el-option>
+                                    <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
                                 </el-select>
                             </div>
                         </el-col>
@@ -75,19 +87,19 @@
                             <div>
                                 <span style="display:inline-block; width:60px;">Xline: </span>
                                 <el-select size="small" v-model="formColumns.xline" style="margin-left:10px;width:100px;">
-                                    <el-option v-for="(item, index) in tableData.length" :value="index" :key="index" :label="'column'+index"></el-option>
+                                    <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
                                 </el-select>
                             </div>
                             <div style="margin-top:10px;">
                                 <span style="display:inline-block; width:60px;">Y: </span>
                                 <el-select size="small" v-model="formColumns.y" style="margin-left:10px;width:100px;">
-                                    <el-option v-for="(item, index) in tableData.length" :value="index" :key="index" :label="'column'+index"></el-option>
+                                    <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
                                 </el-select>
                             </div>
                             <div style="margin-top:10px;">
                                 <span style="display:inline-block; width:60px;">Data: </span>
                                 <el-select size="small" v-model="formColumns.data" style="margin-left:10px;width:100px;">
-                                    <el-option v-for="(item, index) in tableData.length" :value="index" :key="index" :label="'column'+index"></el-option>
+                                    <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
                                 </el-select>
                             </div>
                         </el-col>
@@ -116,13 +128,13 @@
                             <span>Inline</span>
                         </el-col>
                         <el-col style="width:25%">
-                            <input style="width:100px;" />
+                            <input v-model="form1.inlineFrom" style="width:100px;" />
                         </el-col>
                         <el-col style="width:25%">
-                            <input style="width:100px;" />
+                            <input v-model="form1.inlineTo" style="width:100px;" />
                         </el-col>
                         <el-col style="width:25%">
-                            <input style="width:100px;" />
+                            <input v-model="form1.inlineStep" disabled  style="width:100px;" />
                         </el-col>
                     </el-row>
                     <el-row style="width:100%;margin-top:10px;">
@@ -130,13 +142,13 @@
                             <span>Xline</span>
                         </el-col>
                         <el-col style="width:25%">
-                            <input style="width:100px;" />
+                            <input v-model="form1.xlineFrom" style="width:100px;" />
                         </el-col>
                         <el-col style="width:25%">
-                            <input style="width:100px;" />
+                            <input v-model="form1.xlineTo" style="width:100px;" />
                         </el-col>
                         <el-col style="width:25%">
-                            <input style="width:100px;" />
+                            <input v-model="form1.xlineStep" disabled  style="width:100px;" />
                         </el-col>
                     </el-row>
                 </div>
@@ -163,13 +175,13 @@
                             <span>Inline</span>
                         </el-col>
                         <el-col style="width:25%">
-                            <input style="width:100px;" />
+                            <input v-model="form2.inlineFrom" disabled style="width:100px;" />
                         </el-col>
                         <el-col style="width:25%">
-                            <input style="width:100px;" />
+                            <input v-model="form2.inlineTo" disabled  style="width:100px;" />
                         </el-col>
                         <el-col style="width:25%">
-                            <input style="width:100px;" />
+                            <input v-model="form2.inlineStep" disabled  style="width:100px;" />
                         </el-col>
                     </el-row>
                     <el-row style="width:100%;margin-top:10px;">
@@ -177,13 +189,13 @@
                             <span>Xline</span>
                         </el-col>
                         <el-col style="width:25%">
-                            <input style="width:100px;" />
+                            <input v-model="form2.xlineFrom" disabled  style="width:100px;" />
                         </el-col>
                         <el-col style="width:25%">
-                            <input style="width:100px;" />
+                            <input v-model="form2.xlineTo" disabled  style="width:100px;" />
                         </el-col>
                         <el-col style="width:25%">
-                            <input style="width:100px;" />
+                            <input v-model="form2.xlineStep" disabled  style="width:100px;" />
                         </el-col>
                     </el-row>
                 </div>
@@ -211,6 +223,7 @@
         name: "NewProject",
         data(){
             return{
+                currentPage:1,
                 checkInvalid:true,
                 chooseInline:'column1',
                 columns:[
@@ -229,6 +242,22 @@
                     x:0,
                     y:0,
                     data:0,
+                },
+                form1:{
+                    inlineFrom:'470',
+                    inlineTo:'1070',
+                    inlineStep:'1',
+                    xlineFrom:'480',
+                    xlineTo:'1180',
+                    xlineStep:'1',
+                },
+                form2:{
+                    inlineFrom:'470',
+                    inlineTo:'1070',
+                    inlineStep:'1',
+                    xlineFrom:'480',
+                    xlineTo:'1180',
+                    xlineStep:'1',
                 }
             }
         },
@@ -236,9 +265,12 @@
             //获取文件列表
             let _this = this;
             this.$axios({
-                method:'get',
-                url: this.$Global.server_config.url+'/downloadFile/fileList?userId='+this.$Global.server_config.userId,
-
+                method:'post',
+                url: this.$Global.server_config.url+'/downloadFile/fileList',
+                data:{
+                    userId:this.$Global.server_config.userId,
+                    type:'Horizon'
+                }
             }).then((response)=>{
                 _this.downloadFileList = response.data;
             });
@@ -246,13 +278,45 @@
 
         },
         methods:{
+            changePage(page){
+                this.$data.isLoading = true;
+                let _this = this;
+                this.$axios({
+                    method:'get',
+                    url:'/horizon',
+                    params:{
+                        fileId: this.$data.chosenFileId,
+                        page:page,
+                        size:50
+                    }
+                }).then((response)=>{
+                    window.console.log(response);
+                    // _this.tableData = response.data.data;
+                    if(response.data.code===0){
+                        // _this.$data.chosenFile = this.$data.downloadFileList[index].realName;
+                        // _this.$data.hasChosen = true;
+                        _this.$data.currentPage = page;
+                        _this.$data.tableData = response.data.data;
+                        
+                    }else{
+                         _this.$message({
+                            type:'error',
+                            message:'horizon file invalid'
+                        });
+                    }
+                    _this.isLoading = false;
+
+                }).catch((error)=>{
+                    window.console.log(error);
+                    _this.isLoading = false;
+                })
+            },
             importHorizon(){
                 let _this = this;
                 _this.isLoading=true;
                 this.$axios({
                     method:'post',
-                    url:'/horizon/'+this.$Global.projectDetails.subProjectList[1].id+'/file/'+this.$data.chosenFileId,
-                    data:this.formColumns
+                    url:'/horizon?projectId='+this.$Global.projectDetails.id+'&fileId='+this.$data.chosenFileId,
                 }).then((response)=>{
                     window.console.log(response);
                     _this.$message({
@@ -270,11 +334,12 @@
                 
                 let _this = this;
                 this.$axios({
-                    method:'post',
+                    method:'get',
                     url:'/horizon',
                     params:{
-                        subProjectId: this.$Global.projectDetails.subProjectList[1].id,
-                        fileId: this.$data.chosenFileId
+                        fileId: this.$data.chosenFileId,
+                        page:1,
+                        size:50
                     }
                 }).then((response)=>{
                     window.console.log(response);
@@ -286,7 +351,8 @@
                             type:'success',
                             message:'import success'
                         });
-                        _this.getHorizon();
+                        _this.$data.tableData = response.data.data;
+                        // _this.getHorizon();
                     }else{
                          _this.$message({
                             type:'error',
@@ -300,20 +366,20 @@
                     _this.isLoading = false;
                 })
             },
-            getHorizon(){
-                let _this = this;
-                this.$axios({
-                    method:'get',
-                    url:'/horizon',
-                    params:{
-                        fileId: this.$data.chosenFileId,
-                        page:1,
-                        size:50
-                    }
-                }).then((response)=>{
-                    _this.$data.tableData = response.data.data;
-                })
-            }
+            // getHorizon(){
+            //     let _this = this;
+            //     this.$axios({
+            //         method:'get',
+            //         url:'/horizon',
+            //         params:{
+            //             fileId: this.$data.chosenFileId,
+            //             page:1,
+            //             size:50
+            //         }
+            //     }).then((response)=>{
+            //         _this.$data.tableData = response.data.data;
+            //     })
+            // }
         }
     }
 </script>

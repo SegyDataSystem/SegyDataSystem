@@ -23,6 +23,7 @@ import ClusterImage from '../components/algorithm/ClusterImage';
 import LabelMerger from '../components/algorithm/LabelMerger';
 import SegyDataImage from '../components/algorithm/SegyDataImage';
 import test from '../components/test.vue';
+import ImportSegyAttribute from '../components/import/ImportSegyAttribute';
 
 Vue.use(Router);
 
@@ -71,6 +72,10 @@ export default new Router({
             {
                 path: '/SegyDataImage',
                 component: SegyDataImage
+            },
+            {
+                path: '/ImportSegyAttribute',
+                component: ImportSegyAttribute
             }
         ],
         
