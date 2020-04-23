@@ -23,29 +23,29 @@
                     <el-col style="width:50%">
                         <div>
                             <span style="display:inline-block; width:60px;">nxs: </span>
-                            <input style="width:100px;margin-left: 10px;" />
+                            <input v-model="workzone.inlineFrom" disabled style="width:100px;margin-left: 10px;" />
                         </div>
                         <div style="margin-top:10px;">
                             <span style="display:inline-block; width:60px;">nys: </span>
-                            <input style="width:100px;margin-left: 10px;" />
+                            <input v-model="workzone.xlineFrom" disabled style="width:100px;margin-left: 10px;" />
                         </div>
                         <div style="margin-top:10px;">
                             <span style="display:inline-block; width:60px;">nzts: </span>
-                            <input style="width:100px;margin-left: 10px;" />
+                            <input v-model="workzone.timeFrom" disabled style="width:100px;margin-left: 10px;" />
                         </div>
                     </el-col>
                     <el-col style="width:50%">
                         <div>
                             <span style="display:inline-block; width:60px;">nxe: </span>
-                            <input style="width:100px;margin-left: 10px;" />
+                            <input v-model="workzone.inlineTo" disabled style="width:100px;margin-left: 10px;" />
                         </div>
                         <div style="margin-top:10px;">
                             <span style="display:inline-block; width:60px;">nye: </span>
-                            <input style="width:100px;margin-left: 10px;" />
+                            <input v-model="workzone.xlineTo" disabled style="width:100px;margin-left: 10px;" />
                         </div>
                         <div style="margin-top:10px;">
                             <span style="display:inline-block; width:60px;">nzte: </span>
-                            <input style="width:100px;margin-left: 10px;" />
+                            <input v-model="workzone.timeTo" disabled style="width:100px;margin-left: 10px;" />
                         </div>
                     </el-col>
                 </el-row>
@@ -58,29 +58,47 @@
                     <el-col style="width:50%">
                         <div>
                             <span style="display:inline-block; width:60px;">nxs: </span>
-                            <input style="width:100px;margin-left: 10px;" />
+                            <input v-model="workzoneOutput.inlineFrom" style="width:100px;margin-left: 10px;" />
+                        </div>
+                        <div v-show="workzoneOutputFlag.inlineFrom">
+                            <span class="validation">value invalid!</span>
                         </div>
                         <div style="margin-top:10px;">
                             <span style="display:inline-block; width:60px;">nys: </span>
-                            <input style="width:100px;margin-left: 10px;" />
+                            <input v-model="workzoneOutput.xlineFrom" style="width:100px;margin-left: 10px;" />
+                        </div>
+                        <div v-show="workzoneOutputFlag.xlineFrom">
+                            <span class="validation">value invalid!</span>
                         </div>
                         <div style="margin-top:10px;">
                             <span style="display:inline-block; width:60px;">nzts: </span>
-                            <input style="width:100px;margin-left: 10px;" />
+                            <input v-model="workzoneOutput.timeFrom" style="width:100px;margin-left: 10px;" />
+                        </div>
+                        <div v-show="workzoneOutputFlag.timeFrom">
+                            <span class="validation">value invalid!</span>
                         </div>
                     </el-col>
                     <el-col style="width:50%">
                         <div>
                             <span style="display:inline-block; width:60px;">nxe: </span>
-                            <input style="width:100px;margin-left: 10px;" />
+                            <input v-model="workzoneOutput.inlineTo" style="width:100px;margin-left: 10px;" />
+                        </div>
+                        <div v-show="workzoneOutputFlag.inlineTo">
+                            <span class="validation">value invalid!</span>
                         </div>
                         <div style="margin-top:10px;">
                             <span style="display:inline-block; width:60px;">nye: </span>
-                            <input style="width:100px;margin-left: 10px;" />
+                            <input v-model="workzoneOutput.xlineTo" style="width:100px;margin-left: 10px;" />
+                        </div>
+                        <div v-show="workzoneOutputFlag.xlineTo">
+                            <span class="validation">value invalid!</span>
                         </div>
                         <div style="margin-top:10px;">
                             <span style="display:inline-block; width:60px;">nzte: </span>
-                            <input style="width:100px;margin-left: 10px;" />
+                            <input v-model="workzoneOutput.timeTo" style="width:100px;margin-left: 10px;" />
+                        </div>
+                        <div v-show="workzoneOutputFlag.timeTo">
+                            <span class="validation">value invalid!</span>
                         </div>
                     </el-col>
                 </el-row>
@@ -96,15 +114,15 @@
 
             <div style="margin-top: 20px;">
                 <span style="margin-left: 20px;">File Name </span>
-                <input style="margin-left: 20px;width:100px;" />
+                <input v-model="fileName" style="margin-left: 20px;width:100px;" />
             </div>
 
             <div style="margin-top:30px;">
-                <el-button type="primary" @click="()=>{
-                this.$message({message:'download successfully',type:'success'});
-                this.$router.push('/')
-                }">Download File</el-button>
-                <el-button type="primary" @click="()=>{this.$router.push('/')}">Cancel</el-button>
+                <el-button 
+                    size="small"
+                    type="primary" 
+                    @click="exportSeismic">Export</el-button>
+                <el-button size="small" type="primary" @click="()=>{this.$router.push('/')}">Cancel</el-button>
             </div>
             <div style="width:100%;height:50px;"></div>
         </div>
@@ -118,7 +136,193 @@
         data(){
             return{
                 chooseFloat:'IBM',
-                checkInvalid:true
+                checkInvalid:true,
+                fileName:'',
+                workzone:{
+                    inlineFrom:'',
+                    inlinTo:'',
+                    inlinStep:'',
+                    xlineFrom:'',
+                    xlineTo:'',
+                    xlineStep:'',
+                    timeFrom:'',
+                    timeTo:'',
+                    timeStep:''
+                },
+                workzoneOutput:{
+                    inlineFrom:470,
+                    inlineTo:1070,
+                    inlinStep:1,
+                    xlineFrom:480,
+                    xlineTo:1180,
+                    xlineStep:1,
+                    timeFrom:2500,
+                    timeTo:3100,
+                    timeStep:2
+                },
+                workzoneOutputFlag:{
+                    inlineFrom:false,
+                    inlineTo:false,
+                    inlinStep:false,
+                    xlineFrom:false,
+                    xlineTo:false,
+                    xlineStep:false,
+                    timeFrom:false,
+                    timeTo:false,
+                    timeStep:false
+                }
+            }
+        },
+        mounted(){
+            this.workzone = this.$Global.projectDetails.workZone;
+        },
+        watch:{
+            workzoneOutput:{
+                handler(val, oldVal){
+                    window.console.log(val);
+                    window.console.log(oldVal);
+                    let form = this.$data.workzoneOutput;
+                    let workzone = this.$data.workzone;
+                    for(var obj in form){
+                        if(form[obj]){
+                            form[obj] = parseInt(form[obj]);
+                        }else{
+                            form[obj] = '';
+                        }
+                    }
+
+                    if(form.inlineFrom < workzone.inlineFrom || form.inlineFrom > workzone.inlineTo || form.inlineFrom > form.inlineTo){
+                        this.$data.workzoneOutputFlag.inlineFrom = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.inlineFrom = false;
+                    }
+
+                    if(form.inlineTo > workzone.inlineTo || form.inlineTo < workzone.inlineFrom || form.inlineTo < form.inlineFrom){
+                        this.$data.workzoneOutputFlag.inlineTo = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.inlineTo = false;
+                    }
+
+
+                    if(form.xlineFrom < workzone.xlineFrom || form.xlineFrom > workzone.xlineTo || form.xlineFrom > form.xlineTo){
+                        this.$data.workzoneOutputFlag.xlineFrom = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.xlineFrom = false;
+                    }
+
+                    if(form.xlineTo > workzone.xlineTo || form.xlineTo < workzone.xlineFrom || form.xlineTo < form.xlineFrom){
+                        this.$data.workzoneOutputFlag.xlineTo = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.xlineTo = false;
+                    }
+
+
+                    if(form.timeFrom > workzone.timeTo || form.timeFrom < workzone.timeFrom || form.timeFrom > form.timeTo){
+                        this.$data.workzoneOutputFlag.timeFrom = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.timeFrom = false;
+                    }
+
+                    if(form.timeTo < workzone.timeTo || form.timeTo > workzone.timeTo || form.timeTo < form.timeFrom){
+                        this.$data.workzoneOutputFlag.timeTo = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.timeTo = false;
+                    }
+
+                },
+                deep:true
+            }
+        },
+        methods:{
+            exportSeismic(){
+                if(this.fileName===''){
+                    this.$message({message:'Please fill ths fileName',type:'error'});
+                }else{
+                    let form = this.$data.workzoneOutput;
+                    let workzone = this.$data.workzone;
+                    let flag = true;
+
+                    for(var obj in form){
+                        if(form[obj]){
+                            form[obj] = parseInt(form[obj]);
+                        }else{
+                            form[obj] = '';
+                        }
+                    }
+
+                    if(form.inlineFrom < workzone.inlineFrom || form.inlineFrom > workzone.inlineTo || form.inlineFrom > form.inlineTo){
+                        this.$data.workzoneOutputFlag.inlineFrom = true;
+                        flag = false;
+                    }else{
+                        this.$data.workzoneOutputFlag.inlineFrom = false;
+                    }
+
+                    if(form.inlineTo > workzone.inlineTo || form.inlineTo < workzone.inlineFrom || form.inlineTo < form.inlineFrom){
+                        this.$data.workzoneOutputFlag.inlineTo = true;
+                        flag = false;
+                    }else{
+                        this.$data.workzoneOutputFlag.inlineTo = false;
+                    }
+
+                    
+
+                    if(form.xlineFrom < workzone.xlineFrom || form.xlineFrom > workzone.xlineTo || form.xlineFrom > form.xlineTo){
+                        this.$data.workzoneOutputFlag.xlineFrom = true;
+                        flag = false;
+                    }else{
+                        this.$data.workzoneOutputFlag.xlineFrom = false;
+                    }
+
+                    if(form.xlineTo > workzone.xlineTo || form.xlineTo < workzone.xlineFrom || form.xlineTo < form.xlineFrom){
+                        this.$data.workzoneOutputFlag.xlineTo = true;
+                        flag = false;
+                    }else{
+                        this.$data.workzoneOutputFlag.xlineTo = false;
+                    }
+
+
+                    if(form.timeFrom > workzone.timeTo || form.timeFrom < workzone.timeFrom || form.timeFrom > form.timeTo){
+                        this.$data.workzoneOutputFlag.timeFrom = true;
+                        flag = false;
+                    }else{
+                        this.$data.workzoneOutputFlag.timeFrom = false;
+                    }
+
+                    if(form.timeTo < workzone.timeFrom || form.timeTo > workzone.timeTo || form.timeTo < form.timeFrom){
+                        this.$data.workzoneOutputFlag.timeTo = true;
+                        flag = false;
+                    }else{
+                        this.$data.workzoneOutputFlag.timeTo = false;
+                    }
+
+
+
+                    if(flag){
+
+                        let _this = this;
+                        this.$axios({
+                            method:'post',
+                            url:'/segy/export',
+                            params:{
+                                fileId: this.$Global.projectDetails.subProjectList[0].file.id,
+                                userId: '10000'
+                            },
+                            data:this.workzoneOutput
+                        }).then((response)=>{
+                            if(response.data.code===0){
+                                _this.$message({message:'Export successfully',type:'success'});
+                                _this.$router.push('/')
+                            }
+                        })
+                    }
+                }
+                
             }
         }
     }
@@ -130,6 +334,12 @@
         height: 100%;
 
     }
+
+    .validation{
+        font-size: 12px;
+        color: red;
+    }
+
     .import-details-panel{
         width: 53%;
         margin-left: auto;

@@ -6,7 +6,12 @@
         <span class="left-panel-fonts">
           Segy Data System
         </span>
+        
         </div>
+      </div>
+      <div style="float:right;margin-top:10px;margin-right:20px;">
+
+        <el-button type="plain" @click="()=>{this.$router.push('/')}">HomePage</el-button>
       </div>
     </div>
     <div class="main-content">
@@ -33,10 +38,10 @@ export default {
   .top-panel{
     width: 100%;
     height:60px;
-    box-shadow: 0px 4px 10px whitesmoke;
+    /* box-shadow: 0px 4px 10px whitesmoke; */
     border-bottom: 1px solid lightgray;
     background-color: white;
-    z-index: 1000;
+    z-index: 1005;
     position: fixed;
     top:0;
   }

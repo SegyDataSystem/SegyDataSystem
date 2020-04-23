@@ -37,9 +37,7 @@
                 <div style="margin-top:30px;">
                     <el-button
                         type="primary"
-                        @click="()=>{
-                        this.$data.step=2;
-                    }">Next</el-button>
+                        @click="goNextStep">Next</el-button>
                     <el-button  @click="()=>{this.$router.push('/')}">Cancel</el-button>
                 </div>
                 <div style="width:100%;height:50px;"></div>
@@ -162,7 +160,7 @@
                 
                 <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
                 <div style="margin-top:30px;">
-                    <el-button  @click="()=>{()=>{this.$data.step=1;}}">back</el-button>
+                    <el-button  @click="()=>{this.$data.step=1;}">Back</el-button>
                     <el-button  @click="()=>{
                         this.$data.step=3;
                     }">Finish</el-button>
@@ -847,7 +845,7 @@
                 });
             }
             this.$data.optionsSelect1.push({
-                    name:'请选择'
+                    name: 'select...'
                 });
             this.$data.select1 = project.length;
             window.console.log(this.$data.optionsSelect1);
@@ -870,6 +868,17 @@
             
         },
         methods:{
+            goNextStep(){
+                if(this.value.length !== 0){
+                    this.$data.step=2;
+                }else{
+                    this.$message({
+                        type:'error',
+                        message:'No file selected!'
+                    })
+                }                            
+                    
+            },
             getAllFiles(val){
                 let _this = this;
                 let project = this.$Global.projectDetails;
@@ -882,17 +891,46 @@
                     }
                 }).then((response)=>{
                     window.console.log(response.data);
+                    let files = [];
                     _this.downloadFileList = response.data.data;
+                    for(let index = 0; index < _this.downloadFileList.length; index++){
+                    files.push({
+                        key: index,
+                        label: _this.downloadFileList[index].realName,
+                        disabled: false
+                    });
+                    _this.tableData = files;
+
+                    }
                 })
             },
             getSecondOptions(val){
                 this.canSelect = false;
                 let project = this.$Global.projectDetails.subProjectList;
                 window.console.log(val);
-                for(let index = 0; index < project[val].dataMiningList.length; index++){
+                if(val=== this.optionsSelect1.length - 1){
+                    
                     this.optionsSelect2.push({
-                        name: project[val].dataMiningList[index].type
+                        name:'No Data'
                     });
+                    
+                    this.select2 = 0;
+                    this.canSelect = true;
+                }else{
+                    this.optionsSelect2 = [];
+                    for(let index = 0; index < project[val].dataMiningList.length; index++){
+                        this.optionsSelect2.push({
+                            name: project[val].dataMiningList[index].type
+                        });
+                    }
+
+                    if(this.optionsSelect2.length===0){
+                        this.optionsSelect2.push({
+                            name:'No Data'
+                        });
+                        this.select2 = 0;
+                        this.canSelect = true;
+                    }
                 }
             },
             startCalculateImage(){

@@ -69,19 +69,41 @@
                         <span class="form-item-title-span">Line Header</span>
                     </div>
                     <div class="form-item-body">
-                        <span>Format:</span>
-                        <el-radio v-model="baseInfo.dataFormat" label="4-byte IBM float" style="margin-left: 10px;">IBM</el-radio>
+                        <span>Format: {{baseInfo.dataFormat}}</span>
+                        <!-- <el-radio v-model="baseInfo.dataFormat" label="4-byte IBM float" style="margin-left: 10px;">IBM</el-radio>
                         <el-radio v-model="baseInfo.dataFormat" label="IEEE">IEEE</el-radio>
-                        <el-checkbox label="Flip Bytes">Flip Bytes</el-checkbox>
-                        <el-button type="primary" size="small" style="margin-left:15px;" @click="clickPreview">Preview</el-button>
+                        <el-checkbox label="Flip Bytes">Flip Bytes</el-checkbox> -->
+                        
                     </div>
                     
-
 
 
                     <div class="form-item-title no-first">
                         <span class="form-item-title-span">Trace Preview</span>
                     </div>
+                    <div class="form-item-body">
+                        <div v-show="showPreviewButton">
+                            <el-button type="primary" size="small" style="margin-left:15px;" @click="clickPreview">Preview</el-button>
+                        </div>
+                        <div v-show="!showPreviewButton">
+                            <span class="form-item-title-span" style="font-size:12px;">Current Trace</span>
+                            <el-row style="width: 480px;margin-top:10px;">
+                                
+                                <el-col style="width: 230px;">
+                                    <el-slider v-model="trace" @change="changeSlide" :min="0" :max="baseInfo.traceNum" style="width: 200px;"></el-slider>
+                                </el-col>
+                                <el-col style="width: 100px;">
+                                    <el-input-number v-model="trace" size="small" @change="changeSlide"></el-input-number>
+                                </el-col>
+                                <el-col style="width: 100px;margin-left:20px;">
+                                    
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </div>
+                    <!-- <div class="form-item-title no-first">
+                        <span class="form-item-title-span">Trace Preview</span>
+                    </div> -->
                     <div class="form-item-body" style="margin-top:5px;">
                         <div id="myChart" :style="{width: '600px', height: '400px'}"></div>
                     </div>
@@ -96,20 +118,7 @@
                     </div> -->
 
 
-                    <div class="form-item-title no-first">
-                        <span class="form-item-title-span">Current Trace</span>
-                    </div>
-                    <div class="form-item-body">
-                        <el-row style="width: 330px">
-                            <el-col style="width: 230px;">
-                                <el-slider v-model="trace" @change="changeSlide" :min="0" :max="baseInfo.traceNum" style="width: 200px;"></el-slider>
-                            </el-col>
-                            <el-col style="width: 100px;">
-                                <el-input-number v-model="trace" size="small" @change="changeSlide"></el-input-number>
-                            </el-col>
-                        </el-row>
-
-                    </div>
+                    
                 </div>
 
                 <div class="button-panel">
@@ -126,9 +135,9 @@
                     <div>
                         <span>Slice Type: </span>
                         <el-select size="small" v-model="chooseDraw" >
-                            <el-option value="xline">crossline</el-option>
-                            <el-option value="iline">inline</el-option>
-                            <el-option value="depth">time</el-option>
+                            <el-option value="xline" label="crossline"></el-option>
+                            <el-option value="iline" label="inline"></el-option>
+                            <el-option value="depth" label="time"></el-option>
                         </el-select>
                     </div>
                     <div v-if="chooseDraw==='xline'" style="margin-top:20px;">
@@ -172,10 +181,10 @@
                                     <div style="margin-top:10px;">Depth: </div>
                                 </el-col>
                                 <el-col style="width:200px;">
-                                    <el-slider v-model="changeDrawValueDepth"  :min="workzone.timeFrom" :max="workzone.timeTo" style="width: 200px;"></el-slider>
+                                    <el-slider v-model="changeDrawValueDepth" :step="workzone.timeStep" :min="workzone.timeFrom" :max="workzone.timeTo" style="width: 200px;"></el-slider>
                                 </el-col>
                                 <el-col style="width:200px;margin-left:10px;">
-                                    <el-input-number v-model="changeDrawValueDepth" size="small"></el-input-number>
+                                    <el-input-number v-model="changeDrawValueDepth" :step="workzone.timeStep" size="small"></el-input-number>
                                 </el-col>
                             </el-row>
                         </div>
@@ -186,7 +195,7 @@
                     <div id="myChartHot" :style="{width: '600px', height: '400px'}" style="margin-top:30px;"></div>
                 </div>
                 <div class="button-panel">
-                    <el-button @click="()=>{this.$data.active=1}">Back</el-button>
+                    <el-button @click="()=>{this.$data.active=0}">Back</el-button>
                     <el-button v-show="hasChosen" type="primary" @click="()=>{this.$data.active=2;this.getTraceHeader()}">Next</el-button>
                     <el-button type="primary" @click="()=>{this.$router.push('/')}">Cancel</el-button>
                 </div>
@@ -704,6 +713,7 @@
         name: "NewProject",
         data(){
             return{
+                showPreviewButton: true,
                 chooseDraw:'xline',
                 changeDrawValueIline:'',
                 changeDrawValueXline:'',
@@ -827,9 +837,6 @@
                 
             }
         },
-        watch:{
-
-        },
         mounted() {
             //获取文件列表
             let _this = this;
@@ -850,6 +857,90 @@
 
 
        },
+       watch:{
+           
+            workzoneOutput:{
+                handler(val, oldVal){
+                    window.console.log(val);
+                    window.console.log(oldVal);
+                    let form = this.$data.workzoneOutput;
+                    let workzone = this.$data.workzone;
+                    for(var obj in form){
+                        if(form[obj]){
+                            form[obj] = parseInt(form[obj]);
+                        }else{
+                            form[obj] = '';
+                        }
+                    }
+
+                    if(form.inlineFrom < workzone.inlineFrom || form.inlineFrom > workzone.inlineTo || form.inlineFrom > form.inlineTo){
+                        this.$data.workzoneOutputFlag.inlineFrom = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.inlineFrom = false;
+                    }
+
+                    if(form.inlineTo > workzone.inlineTo || form.inlineTo < workzone.inlineFrom || form.inlineTo < form.inlineFrom){
+                        this.$data.workzoneOutputFlag.inlineTo = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.inlineTo = false;
+                    }
+
+                    if(form.inlineStep % workzone.inlineStep != 0 || form.inlineStep == 0){
+                        this.$data.workzoneOutputFlag.inlineStep = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.inlineStep = false;
+                    }
+
+                    if(form.xlineFrom < workzone.xlineFrom || form.xlineFrom > workzone.xlineTo || form.xlineFrom > form.xlineTo){
+                        this.$data.workzoneOutputFlag.xlineFrom = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.xlineFrom = false;
+                    }
+
+                    if(form.xlineTo > workzone.xlineTo || form.xlineTo < workzone.xlineFrom || form.xlineTo < form.xlineFrom){
+                        this.$data.workzoneOutputFlag.xlineTo = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.xlineTo = false;
+                    }
+
+                    if(form.xlineStep % workzone.xlineStep != 0 || form.xlineStep == 0){
+                        this.$data.workzoneOutputFlag.xlineStep = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.xlineStep = false;
+                    }
+
+                    if(form.timeFrom > workzone.timeTo || form.timeFrom < workzone.timeFrom || form.timeFrom > form.timeTo){
+                        this.$data.workzoneOutputFlag.timeFrom = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.timeFrom = false;
+                    }
+
+                    if(form.timeTo < workzone.timeFrom || form.timeTo > workzone.timeTo || form.timeTo < form.timeFrom){
+                        this.$data.workzoneOutputFlag.timeTo = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.timeTo = false;
+                    }
+
+                    if(form.timeStep % workzone.timeStep != 0 || form.timeStep == 0){
+                        this.$data.workzoneOutputFlag.timeStep = true;
+                        
+                    }else{
+                        this.$data.workzoneOutputFlag.timeStep = false;
+                    }
+
+                },
+                deep:true
+            
+           }
+       },
         methods:{
             getWorkZone(){
                 let _this = this;
@@ -864,7 +955,7 @@
                     // _this.$data.workzoneOutput = response.data.data;
                     _this.changeDrawValueIline = response.data.data.inlineFrom;
                     _this.changeDrawValueXline = response.data.data.xlineFrom;
-                    _this.changeDrawValueDepth = response.data.dara.timeFrom;
+                    _this.changeDrawValueDepth = response.data.data.timeFrom;
                 })
             },
             seeLineHeader(){
@@ -972,11 +1063,13 @@
             changeDraw(){
                 this.isLoading = true;
                 let change = this.$data.chooseDraw;
+                let myChartHot = this.$echarts.init(document.getElementById('myChartHot'));
+                myChartHot.dispose();
                 let _this = this;
                 if(change==='depth'){
                 this.$axios({
                     method:'get',
-                    url:'/segy/'+change+'/'+ (this.changeDrawValueDepth-this.workzone.timeFrom),
+                    url:'/segy/'+change+'/'+ (this.changeDrawValueDepth-this.workzone.timeFrom)/this.workzone.timeStep,
                     params:{
                         // subProjectId: this.$Global.projectDetails.subProjectList[0].id
                         fileId: this.$data.chosenFileId
@@ -1036,7 +1129,8 @@
                 let totalNum = this.$data.displayData.length;
                 let xlimit = totalNum;
                 let ylimit = this.$data.displayData[0].length;
-
+                this.$data.xdata = [];
+                this.$data.ydata = [];
 
                 if(this.chooseDraw==='xline'){
                     
@@ -1116,7 +1210,7 @@
                     grid:{
                       x:100,
                       y:30,
-                      x2: 50,
+                      x2: 70,
                       y2:70
                      },
                     series: [{
@@ -1188,6 +1282,9 @@
 
             clickPreview(){
                 let _this = this;
+                this.showPreviewButton = false;
+                
+                
                 this.isLoading = true;
                 this.$axios({
                     method:'get',
@@ -1232,51 +1329,77 @@
                 let workzone = this.$data.workzone;
                 let flag = true;
 
+                for(var obj in form){
+                        if(form[obj]){
+                            form[obj] = parseInt(form[obj]);
+                        }else{
+                            form[obj] = '';
+                        }
+                    }
+
                 if(form.inlineFrom < workzone.inlineFrom || form.inlineFrom > workzone.inlineTo || form.inlineFrom > form.inlineTo){
                     this.$data.workzoneOutputFlag.inlineFrom = true;
                     flag = false;
+                }else{
+                    this.$data.workzoneOutputFlag.inlineFrom = false;
                 }
 
-                if(form.inlineTo < workzone.inlineTo || form.inlineTo > workzone.inlineTo || form.inlineTo < form.inlineFrom){
+                if(form.inlineTo > workzone.inlineTo || form.inlineTo < workzone.inlineFrom || form.inlineTo < form.inlineFrom){
                     this.$data.workzoneOutputFlag.inlineTo = true;
                     flag = false;
+                }else{
+                    this.$data.workzoneOutputFlag.inlineTo = false;
                 }
 
-                if(form.inlineStep % this.$data.inlineStep != 0 && form.inlineStep == 0){
+                if(form.inlineStep % workzone.inlineStep != 0 || form.inlineStep == 0){
                     this.$data.workzoneOutputFlag.inlineStep = true;
                     flag = false;
+                }else{
+                    this.$data.workzoneOutputFlag.inlineStep = false;
                 }
-
 
                 if(form.xlineFrom < workzone.xlineFrom || form.xlineFrom > workzone.xlineTo || form.xlineFrom > form.xlineTo){
                     this.$data.workzoneOutputFlag.xlineFrom = true;
                     flag = false;
+                }else{
+                    this.$data.workzoneOutputFlag.xlineFrom = false;
                 }
 
-                if(form.xlineTo < workzone.xlineTo || form.xlineTo > workzone.xlineTo || form.xlineTo < form.xlineFrom){
+                if(form.xlineTo > workzone.xlineTo || form.xlineTo < workzone.xlineFrom || form.xlineTo < form.xlineFrom){
                     this.$data.workzoneOutputFlag.xlineTo = true;
                     flag = false;
+                }else{
+                    this.$data.workzoneOutputFlag.xlineTo = false;
                 }
 
-                if(form.xlineStep % this.$data.xlineStep != 0 && form.xlineStep == 0){
+                if(form.xlineStep % workzone.xlineStep != 0 || form.xlineStep == 0){
                     this.$data.workzoneOutputFlag.xlineStep = true;
                     flag = false;
+                }else{
+                    this.$data.workzoneOutputFlag.xlineStep = false;
                 }
 
-                if(form.timeFrom < workzone.timeFrom || form.timeFrom > workzone.timeTo || form.timeFrom > form.timeTo){
+                if(form.timeFrom > workzone.timeTo || form.timeFrom < workzone.timeFrom || form.timeFrom > form.timeTo){
                     this.$data.workzoneOutputFlag.timeFrom = true;
                     flag = false;
+                }else{
+                    this.$data.workzoneOutputFlag.timeFrom = false;
                 }
 
-                if(form.timeTo < workzone.timeTo || form.timeTo > workzone.timeTo || form.timeTo < form.timeFrom){
+                if(form.timeTo < workzone.timeFrom || form.timeTo > workzone.timeTo || form.timeTo < form.timeFrom){
                     this.$data.workzoneOutputFlag.timeTo = true;
                     flag = false;
+                }else{
+                    this.$data.workzoneOutputFlag.timeTo = false;
                 }
 
-                if(form.timeStep % this.$data.timeStep != 0 && form.timeStep == 0){
+                if(form.timeStep % workzone.timeStep != 0 || form.timeStep == 0){
                     this.$data.workzoneOutputFlag.timeStep = true;
                     flag = false;
+                }else{
+                    this.$data.workzoneOutputFlag.timeStep = false;
                 }
+
 
                 if(flag===false){
                     this.$message({

@@ -1,5 +1,5 @@
 <template>
-    <div id="file-manage">
+    <div id="file-manage" v-loading="isLoading">
         <div style="width: 100%;height:80px;" class="my-header">
             <span>Segy Data File Management</span>
         </div>
@@ -39,7 +39,7 @@
                                             :FilesAdded="filesAddedSingle"
                                             :multipart_params="singleOptions"
                                             :filters="{
-                                              max_file_size : '400kb'
+                                              max_file_size : '1125000kb'
                                             }"
                                             @inputUploader="inputUploaderSingle"
                                     />
@@ -424,6 +424,7 @@
         },
         data () {
             return {
+                isLoading: false,
                 server_config: this.$Global.server_config,
                 defaultActive: 0,
                 useIndex:0,
@@ -544,11 +545,11 @@
                 this.$axios({
                     method:'delete',
                     url: this.$Global.server_config.url+'/updateFile',
-                    data:{
+                    params:{
                         fileId: _this.$data.tableDataDownload[index].id
                     }
                 }).then((res)=>{
-                    if(res.data.code===0){
+                    if(res.data.code===0&&res.data.data===true){
                         _this.$message({
                             type:'success',
                             message:'file deleted successfully'
@@ -585,10 +586,11 @@
                 }
             },
             inputUploaderSingle(up) {
+                window.console.log(up);
                 this.upSingle = up;
                 this.filesSingle = up.files;
                 
-                // window.console.log(this.upS);
+                window.console.log(this.filesSingle);
             },
             uploadStartSingle() {
                 this.dialogTableVisibleSingle = true;
@@ -681,6 +683,7 @@
 
             },
             downloadFileQuick(id){
+                this.isLoading = true;
                 window.console.log(id);
 
                 let _this = this;
@@ -705,6 +708,7 @@
                     downloadElement.click(); //点击下载
                     document.body.removeChild(downloadElement); //下载完成移除元素
                     window.URL.revokeObjectURL(href); //释放掉blob对象
+                    _this.isLoading = false;
                 })
             }
         }

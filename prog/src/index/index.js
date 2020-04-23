@@ -24,6 +24,8 @@ import LabelMerger from '../components/algorithm/LabelMerger';
 import SegyDataImage from '../components/algorithm/SegyDataImage';
 import test from '../components/test.vue';
 import ImportSegyAttribute from '../components/import/ImportSegyAttribute';
+import ImportHorizonAttribute from '../components/import/ImportHorizonAttribute';
+import ImportIntervalAttribute from '../components/import/ImportIntervalAttribute';
 
 Vue.use(Router);
 
@@ -76,6 +78,14 @@ export default new Router({
             {
                 path: '/ImportSegyAttribute',
                 component: ImportSegyAttribute
+            },
+            {
+                path: '/ImportHorizonAttribute',
+                component: ImportHorizonAttribute
+            },
+            {
+                path: '/ImportIntervalAttribute',
+                component: ImportIntervalAttribute
             }
         ],
         

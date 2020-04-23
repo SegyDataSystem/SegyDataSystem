@@ -42,138 +42,139 @@
                     </div>
 
                 </div>
-            
-            <div class="form-item-title" style="margin-top:20px;">
-                <span class="form-item-title-span">Set data column</span>
-            </div>
-            <div class="form-item-body">
-                <el-row style="width:100%">
-                    <el-col style="width:50%">
-                        <div>
-                            <span style="display:inline-block; width:60px;">Inline: </span>
-                            <el-select size="small" v-model="chooseInline" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition=true}">
+            <div v-show="hasChosen">
+                <div class="form-item-title" style="margin-top:20px;">
+                    <span class="form-item-title-span">Set data column</span>
+                </div>
+                <div class="form-item-body">
+                    <el-row style="width:100%">
+                        <el-col style="width:50%">
+                            <div>
+                                <span style="display:inline-block; width:60px;">Inline: </span>
+                                <el-select size="small" v-model="chooseInline" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition=true}">
+                                    <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
+                                </el-select>
+                            </div>
+                            <div style="margin-top:10px;">
+                                <span style="display:inline-block; width:60px;">TimeStart: </span>
+                                <el-select size="small" v-model="chooseInline1" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition1=true}">
+                                    <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
+                                </el-select>
+                            </div>
+                            <div style="margin-top:10px;">
+                                <span style="display:inline-block; width:60px;">FileName: </span>
+                                <el-select size="small" v-model="chooseInline5" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition2=true}">
+                                    <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
+                                </el-select>
+                            </div>
+                        </el-col>
+                        <el-col style="width:50%">
+                            <div>
+                                <span style="display:inline-block; width:60px;">Xline: </span>
+                                <el-select size="small" v-model="chooseInline2" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition3=true}">
                                 <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
-                            </el-select>
+                                </el-select>
+                            </div>
+                            <div style="margin-top:10px;">
+                                <span style="display:inline-block; width:60px;">TimeEnd: </span>
+                                <el-select size="small" v-model="chooseInline3" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition4=true}">
+                                    <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
+                                </el-select>
+                            </div>
+                            <div style="margin-top:10px;">
+                                <span style="display:inline-block; width:60px;">Type: </span>
+                                <el-select size="small" v-model="chooseInline4" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition5=true}">
+                                    <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
+                                </el-select>
+                            </div>
+                        </el-col>
+                    </el-row>
+                </div>
+                
+                <div class="form-item-title" style="margin-top:20px;" >
+                    <span class="form-item-title-span">Sign Data</span>
+                </div>
+                <div style="margin-top:20px;">
+                    <el-button type="primary" @click="getSignData">show sign</el-button>
+                </div>
+                <div class="form-item-body">
+                    <div v-if="loadingFinish">
+                        <div v-for="(item,index) in tableDataColumnSplit" :key="index" style="float:left;position:relative;width:10px;height:10px;" :style="{left:item[1]+'px',top:item[2]+'px'}">
+                            <div class="use-block" ></div>
+                            <div style="font-size:5px;font-weight:bold">{{item[0]}}</div>
                         </div>
-                        <div style="margin-top:10px;">
-                            <span style="display:inline-block; width:60px;">TimeStart: </span>
-                            <el-select size="small" v-model="chooseInline1" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition1=true}">
-                                <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
-                            </el-select>
-                        </div>
-                        <div style="margin-top:10px;">
-                            <span style="display:inline-block; width:60px;">FileName: </span>
-                            <el-select size="small" v-model="chooseInline5" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition2=true}">
-                                <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
-                            </el-select>
-                        </div>
-                    </el-col>
-                    <el-col style="width:50%">
-                        <div>
-                            <span style="display:inline-block; width:60px;">Xline: </span>
-                            <el-select size="small" v-model="chooseInline2" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition3=true}">
-                               <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
-                            </el-select>
-                        </div>
-                        <div style="margin-top:10px;">
-                            <span style="display:inline-block; width:60px;">TimeEnd: </span>
-                            <el-select size="small" v-model="chooseInline3" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition4=true}">
-                                <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
-                            </el-select>
-                        </div>
-                        <div style="margin-top:10px;">
-                            <span style="display:inline-block; width:60px;">Type: </span>
-                            <el-select size="small" v-model="chooseInline4" style="margin-left:10px;width:100px;" @change="()=>{this.showSignCondition5=true}">
-                                <el-option v-for="(item, index) in 6" :value="index" :key="index" :label="'column'+index"></el-option>
-                            </el-select>
-                        </div>
-                    </el-col>
-                </el-row>
-            </div>
-            
-            <div class="form-item-title" style="margin-top:20px;" >
-                <span class="form-item-title-span">Sign Data</span>
-            </div>
-            <div style="margin-top:20px;">
-                <el-button type="primary" @click="getSignData">show sign</el-button>
-            </div>
-            <div class="form-item-body">
-                <div v-if="loadingFinish">
-                    <div v-for="(item,index) in tableDataColumnSplit" :key="index" style="float:left;position:relative;width:10px;height:10px;" :style="{left:item[1]+'px',top:item[2]+'px'}">
-                        <div class="use-block" ></div>
-                        <div style="font-size:5px;font-weight:bold">{{item[0]}}</div>
+                    </div>
+                    <!-- <div class="use-block" :style="{top:'65px',left:'50px'}"></div> -->
+                    <div id="myChartHot" :style="{width: '700px', height: '600px'}" >
+                        
                     </div>
                 </div>
-                <!-- <div class="use-block" :style="{top:'65px',left:'50px'}"></div> -->
-                <div id="myChartHot" :style="{width: '500px', height: '400px'}" >
-                    
-                </div>
-            </div>
 
-            <div class="form-item-title" style="margin-top:20px;">
-                <span class="form-item-title-span">Set work range</span>
-            </div>
-            <div class="form-item-body">
-                <el-row style="width:100%">
-                    <el-col style="width:25%">
-                        <div style="width:100%;height:10px;"></div>
-                    </el-col>
-                    <el-col style="width:25%">
-                        <span>Min</span>
-                    </el-col>
-                    <el-col style="width:25%">
-                        <span>Max</span>
-                    </el-col>
-                    <el-col style="width:25%">
-                        <span>Step</span>
-                    </el-col>
-                </el-row>
-                <el-row style="width:100%;margin-top:10px;">
-                    <el-col style="width:25%">
-                        <span>Inline:</span>
-                    </el-col>
-                    <el-col style="width:25%">
-                        <input style="width:100px;"  v-model="setWorkzoneData.inlineFrom"/>
-                    </el-col>
-                    <el-col style="width:25%">
-                        <input style="width:100px;" v-model="setWorkzoneData.inlineTo" />
-                    </el-col>
-                    <el-col style="width:25%">
-                        <input style="width:100px;" v-model="setWorkzoneData.inlineStep" />
-                    </el-col>
-                </el-row>
-                 <el-row style="width:100%;margin-top:10px;">
-                    <el-col style="width:25%">
-                        <span>Xline:</span>
-                    </el-col>
-                    <el-col style="width:25%">
-                        <input style="width:100px;" v-model="setWorkzoneData.xlineFrom" />
-                    </el-col>
-                    <el-col style="width:25%">
-                        <input style="width:100px;" v-model="setWorkzoneData.xlineTo" />
-                    </el-col>
-                    <el-col style="width:25%">
-                        <input style="width:100px;" v-model="setWorkzoneData.xlineStep" />
-                    </el-col>
-                </el-row>
-                <el-row style="width:100%;margin-top:10px;">
-                    <el-col style="width:25%">
-                        <span>Timeslice:</span>
-                    </el-col>
-                    <el-col style="width:25%">
-                        <input style="width:100px;" v-model="setWorkzoneData.timeFrom" />
-                    </el-col>
-                    <el-col style="width:25%">
-                        <input style="width:100px;" v-model="setWorkzoneData.timeTo" />
-                    </el-col>
-                    <el-col style="width:25%">
-                        <input style="width:100px;" v-model="setWorkzoneData.timeStep" />
-                    </el-col>
-                </el-row>
+                <div class="form-item-title" style="margin-top:20px;">
+                    <span class="form-item-title-span">Set work range</span>
+                </div>
+                <div class="form-item-body">
+                    <el-row style="width:100%">
+                        <el-col style="width:25%">
+                            <div style="width:100%;height:10px;"></div>
+                        </el-col>
+                        <el-col style="width:25%">
+                            <span>Min</span>
+                        </el-col>
+                        <el-col style="width:25%">
+                            <span>Max</span>
+                        </el-col>
+                        <el-col style="width:25%">
+                            <span>Step</span>
+                        </el-col>
+                    </el-row>
+                    <el-row style="width:100%;margin-top:10px;">
+                        <el-col style="width:25%">
+                            <span>Inline:</span>
+                        </el-col>
+                        <el-col style="width:25%">
+                            <input style="width:100px;"  v-model="setWorkzoneData.inlineFrom"/>
+                        </el-col>
+                        <el-col style="width:25%">
+                            <input style="width:100px;" v-model="setWorkzoneData.inlineTo" />
+                        </el-col>
+                        <el-col style="width:25%">
+                            <input style="width:100px;" v-model="setWorkzoneData.inlineStep" />
+                        </el-col>
+                    </el-row>
+                    <el-row style="width:100%;margin-top:10px;">
+                        <el-col style="width:25%">
+                            <span>Xline:</span>
+                        </el-col>
+                        <el-col style="width:25%">
+                            <input style="width:100px;" v-model="setWorkzoneData.xlineFrom" />
+                        </el-col>
+                        <el-col style="width:25%">
+                            <input style="width:100px;" v-model="setWorkzoneData.xlineTo" />
+                        </el-col>
+                        <el-col style="width:25%">
+                            <input style="width:100px;" v-model="setWorkzoneData.xlineStep" />
+                        </el-col>
+                    </el-row>
+                    <el-row style="width:100%;margin-top:10px;">
+                        <el-col style="width:25%">
+                            <span>Timeslice:</span>
+                        </el-col>
+                        <el-col style="width:25%">
+                            <input style="width:100px;" v-model="setWorkzoneData.timeFrom" />
+                        </el-col>
+                        <el-col style="width:25%">
+                            <input style="width:100px;" v-model="setWorkzoneData.timeTo" />
+                        </el-col>
+                        <el-col style="width:25%">
+                            <input style="width:100px;" v-model="setWorkzoneData.timeStep" />
+                        </el-col>
+                    </el-row>
+                </div>
             </div>
             
             <div style="margin-top:30px;">
-                <el-button type="primary" @click="()=>{this.postWell()}">Import File</el-button>
+                <el-button type="primary" v-show="hasChosen" @click="()=>{this.postWell()}">Import File</el-button>
                  <el-button type="primary" @click="()=>{this.$router.push('/')}">Cancel</el-button>
             </div>
             <div style="width:100%;height:50px;"></div>
@@ -183,6 +184,7 @@
 </template>
 
 <script>
+
     export default {
         name: "NewProject",
         data(){
@@ -298,7 +300,7 @@
                 let _this = this;
                 this.$axios({
                     method:'get',
-                    url:'/segy/depth/1',
+                    url:'/segy/depth/10',
                     params:{
                         fileId: this.$Global.projectDetails.subProjectList[0].file.id
                     }
@@ -352,6 +354,7 @@
                         data: this.$data.ydata,
                         label: 'xline'
                     },
+                    
                     visualMap: {
                         min: -150,
                         max: 150,
@@ -362,7 +365,10 @@
                         }
                     },
                     grid:{
-                        x2: 50,
+                        x:100,
+                        y:30,
+                        x2: 70,
+                        y2:70
                     },
                     series: [{
                         name: 'Gaussian',
@@ -375,10 +381,30 @@
                             }
                         },
                         progressive: 1000,
-                        animation: false
+                        animation: false,
+                        markPotint:{
+                            symbol:'pin',
+                            symbolSize:50,
+                            
+                            itemStyle:{
+                            color: '#4587E7',
+                            borderColor: '#000',
+                            borderWidth: 0,
+                            borderType: 'solid',
+                            
+                            },
+                            data:[
+                                {value:820, xAxis:600, yAxis:700}
+                            ]
+                        }
                     }]
                 };
                 myChartHot.setOption(option);
+                let _this = this;
+                setTimeout(function(){
+                    _this.setSignData();
+                },4000)
+                this.setSignData();
                 this.loadingFinish = true;
 
                 
@@ -391,7 +417,7 @@
                         url:'/project/workzone/'+this.$Global.projectDetails.workZone.id,
                     }).then((response)=>{
                         _this.signData = response.data.data;
-                        _this.setSignData();
+                        
                         _this.changeDraw();
                     })
                 }else{
@@ -403,8 +429,8 @@
             },
             setSignData(){
                 for(let i = 0; i < this.tableDataColumnSplit.length; i++){
-                    this.tableDataColumnSplit[i][1] = (parseInt(this.tableDataColumnSplit[i][1]) - parseInt(this.signData.inlineFrom)) / ((parseInt(this.signData.inlineTo) - parseInt(this.signData.inlineFrom)) * 1.0) * 400 + 50 -5*i;
-                    this.tableDataColumnSplit[i][2] = (parseInt(this.tableDataColumnSplit[i][2]) - parseInt(this.signData.xlineFrom)) / ((parseInt(this.signData.xlineTo) - parseInt(this.signData.xlineFrom)) * 1.0) * 200 + 75;
+                    this.tableDataColumnSplit[i][1] = (parseInt(this.tableDataColumnSplit[i][1]) - parseInt(this.signData.inlineFrom)) / ((parseInt(this.signData.inlineTo) - parseInt(this.signData.inlineFrom)) * 1.0) * 700 + 50 -5*i;
+                    this.tableDataColumnSplit[i][2] = (parseInt(this.tableDataColumnSplit[i][2]) - parseInt(this.signData.xlineFrom)) / ((parseInt(this.signData.xlineTo) - parseInt(this.signData.xlineFrom)) * 1.0) * 400 + 75;
                     window.console.log(this.tableDataColumnSplit[i][1]);
                 }
                 

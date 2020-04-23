@@ -15,31 +15,20 @@
                     <span class="form-item-title-span">Data Selection</span>
                 </div>
                 <div class="form-item-body">
-                    <el-select v-model="select1" placeholder="select...">
-                        <el-option value="0" label="Seismic3D"></el-option>
+                    <el-select v-model="select1" placeholder="select..."  @change="getSecondOptions">
+                        <el-option v-for="(item,index) in optionsSelect1" :value="index" :label="item.name" :key="index"></el-option>
                     </el-select>
-                    <el-select v-model="select2" placeholder="select...">
-                        <el-option value="0" label="Poststack Amplitude"></el-option>
-                    </el-select>
-                    <el-select v-model="select3" placeholder="select...">
-                        <el-option value="0" label="Preprocess"></el-option>
-                    </el-select>
-                    <el-select v-model="select4" placeholder="select...">
-                        <el-option value="0" label="SRC"></el-option>
+                    <el-select v-model="select2" placeholder="select..." style="margin-left:60px;" :disabled="canSelect" @change="getAllFiles">
+                        <el-option v-for="(item,index) in optionsSelect2" :value="index" :label="item.name" :key="index"></el-option>
                     </el-select>
                 </div>
                 <div class="form-item-body">
-                    <el-transfer v-model="value" @change="changeChoose" :data="data" :titles="[' ', ' ']"></el-transfer>
+                    <el-transfer v-model="value" @change="changeChoose" :data="tableData" :titles="[' ', ' ']"></el-transfer>
                 </div>
-                <div class="form-item-body">
-                    <el-button type="primary">Show Correlation Diagram</el-button>
-                    <el-button type="primary">Show Histogram</el-button>
-                </div>
+                
                 <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
                 <div style="margin-top:30px;">
-                    <el-button  @click="()=>{
-                        this.$data.step=2;
-                    }">Next</el-button>
+                    <el-button  @click="goNextStep">Next</el-button>
                     <el-button  @click="()=>{this.$router.push('/')}">Cancel</el-button>
                 </div>
                 <div style="width:100%;height:50px;"></div>
@@ -157,7 +146,7 @@
                 
                 <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
                 <div style="margin-top:30px;">
-                    <el-button  @click="()=>{()=>{this.$data.step=1;}}">back</el-button>
+                    <el-button  @click="()=>{this.$data.step=1;}">back</el-button>
                     <el-button  @click="()=>{
                         this.$data.step=3;
                     }">Finish</el-button>
@@ -450,19 +439,21 @@
             const data = [];
             window.console.log(_);
             
-                data.push({
-                    key: 1,
-                    label: 'SRC_dn_rms_poststackamplitude',
-                    disabled: false
-                });
+               
                 
                 return data;
             };
             return{
+                optionsSelect1:[
+
+                ],
+                optionsSelect2:[
+
+                ],
                 chooseFloat:'IBM',
                 checkInvalid:true,
-                select1:'0',
-                select2:'0',
+                select1:5,
+                select2:'',
                 select3:'0',
                 select4:'0',
                 select5:'BAYES',
@@ -597,6 +588,20 @@
             }
         },
         mounted() {
+            //获取第一个选择框
+            let project = this.$Global.projectDetails.subProjectList;
+
+            for(let index = 0; index < project.length; index++){
+                this.$data.optionsSelect1.push({
+                    name:project[index].type
+                });
+            }
+            this.$data.optionsSelect1.push({
+                    name: 'select...'
+                });
+            this.$data.select1 = project.length;
+            window.console.log(this.$data.optionsSelect1);
+
             //获取文件列表
             let _this = this;
             this.$axios({
@@ -617,6 +622,71 @@
             });
         },
         methods:{
+            goNextStep(){
+                if(this.value.length !== 0){
+                    this.$data.step=2;
+                }else{
+                    this.$message({
+                        type:'error',
+                        message:'No file selected!'
+                    })
+                }                            
+                    
+            },
+            getAllFiles(val){
+                let _this = this;
+                let project = this.$Global.projectDetails;
+                this.$axios({
+                    methods:'get',
+                    url:'/project/'+project.id+'/file',
+                    params:{
+                        subProjectType: project.subProjectList[this.select1].type,
+                        dataMiningType: project.subProjectList[this.select1].dataMiningList[val].type
+                    }
+                }).then((response)=>{
+                    window.console.log(response.data);
+                    let files = [];
+                    _this.downloadFileList = response.data.data;
+                    for(let index = 0; index < _this.downloadFileList.length; index++){
+                    files.push({
+                        key: index,
+                        label: _this.downloadFileList[index].realName,
+                        disabled: false
+                    });
+                    _this.tableData = files;
+
+                    }
+                })
+            },
+            getSecondOptions(val){
+                this.canSelect = false;
+                let project = this.$Global.projectDetails.subProjectList;
+                window.console.log(val);
+                if(val=== this.optionsSelect1.length - 1){
+                    
+                    this.optionsSelect2.push({
+                        name:'No Data'
+                    });
+                    
+                    this.select2 = 0;
+                    this.canSelect = true;
+                }else{
+                    this.optionsSelect2 = [];
+                    for(let index = 0; index < project[val].dataMiningList.length; index++){
+                        this.optionsSelect2.push({
+                            name: project[val].dataMiningList[index].type
+                        });
+                    }
+
+                    if(this.optionsSelect2.length===0){
+                        this.optionsSelect2.push({
+                            name:'No Data'
+                        });
+                        this.select2 = 0;
+                        this.canSelect = true;
+                    }
+                }
+            },
             changeChoose(current, direction, keys){
                 window.console.log(current);
                 window.console.log(direction);
