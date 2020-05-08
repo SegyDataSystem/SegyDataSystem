@@ -146,7 +146,7 @@
                 
                 <div style="margin-top:30px;height:1px;width:90%;background-color:#ddd"></div>
                 <div style="margin-top:30px;">
-                    <el-button  @click="()=>{this.$data.step=1;}">back</el-button>
+                    <el-button  @click="()=>{this.$data.step=1;}">Back</el-button>
                     <el-button  @click="()=>{
                         this.$data.step=3;
                     }">Finish</el-button>

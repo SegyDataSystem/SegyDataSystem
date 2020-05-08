@@ -526,9 +526,23 @@
           message:'No node is selected!',
           type:'error'
         })
-      }else{
+      }else if(tree.length === 1){
+        window.console.log(tree[0]);
+        let goid = 0;
+        let list = this.$Global.projectDetails.subProjectList[1].dataMiningList[2].fileList;
+        for(let i = 0; i < list.length; i++){
+          if(list[i].realName === tree[0].label){
+            goid = list[i].id;
+            break;
+          }
+        }
         this.$router.push({path:'/ClusterImage',query:{
-          id: this.$Global.projectDetails.subProjectList[1].dataMiningList[2].fileList[0].id}});
+          id: goid}});
+      }else{
+        this.$message({
+          message:'Please Select One Cluster Node!',
+          type:'error'
+        })
       }
     },
     showSeismicImage(){

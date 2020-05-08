@@ -111,10 +111,7 @@
                 <input style="margin-left: 20px;width:100px;" :disabled="!checkInvalid" />
             </div>
 
-            <div style="margin-top: 20px;">
-                <span style="margin-left: 20px;">File Name </span>
-                <input v-model="fileName" style="margin-left: 20px;width:100px;" />
-            </div>
+          
 
             <div style="margin-top:30px;">
                 <el-button 

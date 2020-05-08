@@ -83,7 +83,7 @@
                                     </el-dialog>
                                     <br/>
                                     <br/>
-                                    <el-tag type="warning">file max length:100MB</el-tag>
+                                    <el-tag type="warning">File max length:100MB</el-tag>
                                 </div>
                         </div>
 
@@ -329,8 +329,8 @@
                                         <el-table-column
                                                 label="operation">
                                             <template>
-                                                <el-button type="primary" size="small">download</el-button>
-                                                <el-button type="danger" size="small">delete</el-button>
+                                                <el-button type="primary" size="small">Download</el-button>
+                                                <el-button type="danger" size="small">Delete</el-button>
                                             </template>
                                         </el-table-column>
                                     </el-table>
@@ -396,8 +396,8 @@
                                                 label="operation"
                                                 width="250">
                                             <template slot-scope="scope">
-                                                <el-button type="primary" size="small" @click="downloadFileQuick(scope.$index)">download</el-button>
-                                                <el-button type="danger" size="small" @click="deleteDownloadFile(scope.$index)">delete</el-button>
+                                                <el-button type="primary" size="small" @click="downloadFileQuick(scope.$index)">Download</el-button>
+                                                <el-button type="danger" size="small" @click="deleteDownloadFile(scope.$index)">Delete</el-button>
                                             </template>
                                         </el-table-column>
                                     </el-table>

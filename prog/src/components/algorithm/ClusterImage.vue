@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-loading="isLoading">
         <el-dialog :visible.sync="dialogVisible" title="select label">
             <div>
                 <span>Enter label type：</span>
@@ -56,11 +56,11 @@
                 </el-submenu>
             </el-menu>
         </div>
-        <div class="image-panel">
+        <div class="image-panel" v-show="showImage">
             <div class="image" id="myChartHot" @mousedown="mousedown" @mousemove="touchstart"></div>
             <!-- <img :src="imagePath" class="image" @mousemove="touchstart" @mousedown="mousedown" /> -->
-            <div style="position:relative;top:-35px;">{{xlabel}}</div>
-            <div style="position:relative;top:-240px;left:-220px;">{{ylabel}}</div>
+            <!-- <div style="position:relative;top:-35px;">{{xlabel}}</div>
+            <div style="position:relative;top:-240px;left:-220px;">{{ylabel}}</div> -->
             <div style="margin-top:30px;">
                 <el-button size="small" type="primary" @click="()=>{this.$router.push('/LabelMerger')}">MergeLabel</el-button>
 
@@ -69,6 +69,9 @@
 
 
         </div>
+        <div v-show="!showImage" style="margin-top:35px;font-weight:bold">
+            This Cluster Result is Invalid
+        </div>
     </div>
 </template>
 <script>
@@ -76,8 +79,10 @@ export default {
     name:'',
     data(){
         return{
+            isLoading: false,
             dialogVisible: false,
             input1:'2',
+            showImage: true,
             input2:'filename_label',
             x_position: 0,
             y_position: 0,
@@ -89,8 +94,8 @@ export default {
             useData:[],
             modify_x:'',
             modify_y:'',
-            xlabel:'x_label',
-            ylabel:'y_label',
+            xlabel:'xlabel',
+            ylabel:'ylabel',
             dialogVisibleColor:false,
             dialogVisibleLabel:false,
             choosedColors:0,
@@ -106,6 +111,7 @@ export default {
         // this.$data.imagePath = this.$route.query.imagePath;
         // this.downloadFileQuick(this.$route.query.id);
         let _this = this;
+        this.isLoading = true;
         this.$axios({
             method:'get',
             url:'/visual/'+this.$route.query.id
@@ -113,8 +119,14 @@ export default {
             window.console.log(response.data);
             let data = JSON.parse(response.data.data);
             _this.$data.useData = data;
+            _this.isLoading = false;
+            _this.showImage = true;
             window.console.log(data);
             _this.changeDraw();
+        }).catch((err)=>{
+            window.console.log(err);
+            _this.isLoading = false;
+            _this.showImage = false;
         })
     },
     methods:{
@@ -171,12 +183,12 @@ export default {
                     xAxis: {
                         type: 'category',
                         data: xdata,
-                        label: this.xlabel
+                        name: this.xlabel
                     },
                     yAxis: {
                         type: 'category',
                         data: ydata,
-                        label: this.ylabel
+                        name: this.ylabel
                     },
                     visualMap: {
                         min: 0,
@@ -299,7 +311,7 @@ export default {
 
 .image{
     width:600px;
-    height:400px;
+    height:500px;
 
     /* background-image: url('../assets/back.jpg'); */
     /* background-size: cover; */
